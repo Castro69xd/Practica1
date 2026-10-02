@@ -244,6 +244,32 @@
             <!-- Renderizado dinámicamente desde app.js -->
           </div>
         </div>
+
+        <!-- Respaldo y Gestión de Datos en localStorage -->
+        <div class="card">
+          <h3 class="card-title">💾 Copia de Seguridad y Datos</h3>
+          <p class="card-subtitle">Tus datos están guardados localmente en este dispositivo.</p>
+
+          <div style="display: flex; flex-direction: column; gap: 8px;">
+            <button type="button" class="btn btn-primary" id="btnExportarJSON">
+              📥 Exportar Respaldo (Descargar JSON)
+            </button>
+
+            <label class="btn btn-outline" style="cursor: pointer; text-align: center;">
+              📤 Importar Respaldo (.json)
+              <input type="file" id="inputImportarJSON" accept=".json" style="display: none;">
+            </label>
+
+            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 8px; margin-top: 4px;">
+              <button type="button" class="btn-quick" id="btnCargarEjemplo" style="text-align: center; justify-content: center;">
+                🔄 Cargar Ejemplo
+              </button>
+              <button type="button" class="btn-quick" id="btnBorrarTodo" style="color: var(--danger-main); border-color: var(--danger-border); text-align: center; justify-content: center;">
+                🗑️ Borrar Datos
+              </button>
+            </div>
+          </div>
+        </div>
       </section>
 
     </main>

@@ -13,7 +13,7 @@ const STORAGE_KEYS = {
 };
 
 // ==============================================================================
-// 1. MANEJO DE ALMACENAMIENTO LOCAL (localStorage)
+// 1. MANEJO MODULAR DE ALMACENAMIENTO LOCAL (localStorage)
 // ==============================================================================
 
 /**
@@ -22,28 +22,135 @@ const STORAGE_KEYS = {
  * corruptos o el usuario navegó en modo incógnito estricto, JSON.parse() lanzará
  * una excepción que congelará toda la aplicación si no se envuelve en try/catch.
  */
-function cargarDatos(clave, valorPorDefecto = []) {
+
+// --- Catálogo de Libros ---
+function guardarCatalogo(datosLibros) {
   try {
-    const raw = localStorage.getItem(clave);
-    return raw ? JSON.parse(raw) : valorPorDefecto;
+    localStorage.setItem(STORAGE_KEYS.LIBROS, JSON.stringify(datosLibros));
   } catch (error) {
-    console.error(`Error al leer "${clave}" de localStorage:`, error);
-    return valorPorDefecto;
+    console.error('Error al guardar el catálogo en localStorage:', error);
+    mostrarToast('Error al guardar libros en el dispositivo');
   }
 }
 
-function guardarDatos(clave, datos) {
+function leerCatalogo() {
   try {
-    localStorage.setItem(clave, JSON.stringify(datos));
+    const raw = localStorage.getItem(STORAGE_KEYS.LIBROS);
+    return raw ? JSON.parse(raw) : [];
   } catch (error) {
-    console.error(`Error al guardar "${clave}" en localStorage:`, error);
-    mostrarToast('Error al guardar datos en el dispositivo');
+    console.error('Error al leer el catálogo de localStorage:', error);
+    return [];
   }
 }
 
-// Estado en memoria
-let libros = cargarDatos(STORAGE_KEYS.LIBROS, []);
-let prestamos = cargarDatos(STORAGE_KEYS.PRESTAMOS, []);
+function borrarCatalogo() {
+  localStorage.removeItem(STORAGE_KEYS.LIBROS);
+  libros = [];
+}
+
+// --- Préstamos ---
+function guardarPrestamos(datosPrestamos) {
+  try {
+    localStorage.setItem(STORAGE_KEYS.PRESTAMOS, JSON.stringify(datosPrestamos));
+  } catch (error) {
+    console.error('Error al guardar préstamos en localStorage:', error);
+    mostrarToast('Error al guardar préstamos en el dispositivo');
+  }
+}
+
+function leerPrestamos() {
+  try {
+    const raw = localStorage.getItem(STORAGE_KEYS.PRESTAMOS);
+    return raw ? JSON.parse(raw) : [];
+  } catch (error) {
+    console.error('Error al leer préstamos de localStorage:', error);
+    return [];
+  }
+}
+
+function borrarPrestamos() {
+  localStorage.removeItem(STORAGE_KEYS.PRESTAMOS);
+  prestamos = [];
+}
+
+// --- Borrado global de la app ---
+function borrarTodo() {
+  borrarCatalogo();
+  borrarPrestamos();
+}
+
+/**
+ * Genera datos de ejemplo: 3 libros y 1 préstamo atrasado (ayer = 1 día de atraso garantizado)
+ */
+function generarDatosEjemplo() {
+  const hoy = new Date();
+  
+  // Fecha de devolución: ayer (exactamente 1 día de atraso)
+  const ayer = new Date();
+  ayer.setDate(hoy.getDate() - 1);
+  const fechaAyerStr = `${ayer.getFullYear()}-${String(ayer.getMonth() + 1).padStart(2, '0')}-${String(ayer.getDate()).padStart(2, '0')}`;
+
+  // Fecha de préstamo: hace 7 días
+  const hace7Dias = new Date();
+  hace7Dias.setDate(hoy.getDate() - 7);
+  const fechaInicioStr = `${hace7Dias.getFullYear()}-${String(hace7Dias.getMonth() + 1).padStart(2, '0')}-${String(hace7Dias.getDate()).padStart(2, '0')}`;
+
+  const librosEjemplo = [
+    {
+      id: 'lib_001',
+      codigo: 'LIB-001',
+      titulo: 'Cien años de soledad',
+      autor: 'Gabriel García Márquez',
+      estado: 'bueno',
+      fechaRegistro: new Date().toISOString()
+    },
+    {
+      id: 'lib_002',
+      codigo: 'LIB-002',
+      titulo: 'El principito',
+      autor: 'Antoine de Saint-Exupéry',
+      estado: 'regular',
+      fechaRegistro: new Date().toISOString()
+    },
+    {
+      id: 'lib_003',
+      codigo: 'LIB-003',
+      titulo: 'Rayuela',
+      autor: 'Julio Cortázar',
+      estado: 'bueno',
+      fechaRegistro: new Date().toISOString()
+    }
+  ];
+
+  const prestamosEjemplo = [
+    {
+      id: 'prestamo_001',
+      libroCodigo: 'LIB-001',
+      libroTitulo: 'Cien años de soledad',
+      libroAutor: 'Gabriel García Márquez',
+      persona: 'Ana Gómez',
+      fechaPrestamo: fechaInicioStr,
+      fechaDevolucion: fechaAyerStr,
+      devuelto: false,
+      fechaDevolucionReal: null
+    }
+  ];
+
+  return { librosEjemplo, prestamosEjemplo };
+}
+
+// Inicialización de estado en memoria
+let libros = leerCatalogo();
+let prestamos = leerPrestamos();
+
+// Si es la primera vez que se abre la app (no hay claves en localStorage), inicializar con datos de ejemplo
+if (localStorage.getItem(STORAGE_KEYS.LIBROS) === null && localStorage.getItem(STORAGE_KEYS.PRESTAMOS) === null) {
+  const { librosEjemplo, prestamosEjemplo } = generarDatosEjemplo();
+  libros = librosEjemplo;
+  prestamos = prestamosEjemplo;
+  guardarCatalogo(libros);
+  guardarPrestamos(prestamos);
+}
 
 // ==============================================================================
 // 2. UTILIDADES DE FECHAS (CÁLCULO EXACTO DE DÍAS Y ATRASOS)
@@ -173,7 +280,7 @@ function registrarLibro(codigo, titulo, autor, estado) {
   };
 
   libros.push(nuevoLibro);
-  guardarDatos(STORAGE_KEYS.LIBROS, libros);
+  guardarCatalogo(libros);
   return nuevoLibro;
 }
 
@@ -215,7 +322,7 @@ function prestarLibro(codigoLibro, persona, fechaPrestamo, fechaDevolucion) {
   };
 
   prestamos.push(nuevoPrestamo);
-  guardarDatos(STORAGE_KEYS.PRESTAMOS, prestamos);
+  guardarPrestamos(prestamos);
   return nuevoPrestamo;
 }
 
@@ -230,7 +337,7 @@ function marcarComoDevuelto(prestamoId) {
 
   prestamo.devuelto = true;
   prestamo.fechaDevolucionReal = formatearFechaInput(new Date());
-  guardarDatos(STORAGE_KEYS.PRESTAMOS, prestamos);
+  guardarPrestamos(prestamos);
   actualizarTodaLaUI();
   mostrarToast('Libro devuelto y registrado correctamente.');
 }
@@ -308,7 +415,13 @@ const elements = {
   totalLibrosCount: document.getElementById('totalLibrosCount'),
 
   // Vista Historial de Préstamos
-  listaTodosPrestamosContainer: document.getElementById('listaTodosPrestamosContainer')
+  listaTodosPrestamosContainer: document.getElementById('listaTodosPrestamosContainer'),
+
+  // Controles de Respaldo y Datos
+  btnExportarJSON: document.getElementById('btnExportarJSON'),
+  inputImportarJSON: document.getElementById('inputImportarJSON'),
+  btnCargarEjemplo: document.getElementById('btnCargarEjemplo'),
+  btnBorrarTodo: document.getElementById('btnBorrarTodo')
 };
 
 /**
@@ -677,6 +790,108 @@ if (elements.formPrestar) {
       }
     } catch (err) {
       alert(err.message);
+    }
+  });
+}
+
+// ==============================================================================
+// 6. FUNCIONES DE EXPORTACIÓN, IMPORTACIÓN Y RESPALDO
+// ==============================================================================
+
+/**
+ * Descarga una copia de seguridad en formato JSON
+ */
+function exportarDatosJSON() {
+  try {
+    const payload = {
+      app: 'Biblioteca de Aula',
+      version: '1.0',
+      fechaExportacion: new Date().toISOString(),
+      libros: libros,
+      prestamos: prestamos
+    };
+
+    const dataStr = 'data:text/json;charset=utf-8,' + encodeURIComponent(JSON.stringify(payload, null, 2));
+    const downloadAnchor = document.createElement('a');
+    downloadAnchor.setAttribute('href', dataStr);
+    downloadAnchor.setAttribute('download', `biblioteca_aula_respaldo_${formatearFechaInput(new Date())}.json`);
+    document.body.appendChild(downloadAnchor);
+    downloadAnchor.click();
+    downloadAnchor.remove();
+
+    mostrarToast('Respaldo descargado correctamente.');
+  } catch (error) {
+    console.error('Error al exportar JSON:', error);
+    alert('No se pudo exportar el archivo de respaldo.');
+  }
+}
+
+/**
+ * Importa y restaura una copia de seguridad desde un archivo JSON
+ */
+function importarDatosJSON(archivo) {
+  if (!archivo) return;
+  const lector = new FileReader();
+
+  lector.onload = (e) => {
+    try {
+      const contenido = JSON.parse(e.target.result);
+      if (!Array.isArray(contenido.libros) || !Array.isArray(contenido.prestamos)) {
+        throw new Error('El archivo no contiene un formato de respaldo válido (faltan listas de libros o préstamos).');
+      }
+
+      libros = contenido.libros;
+      prestamos = contenido.prestamos;
+
+      guardarCatalogo(libros);
+      guardarPrestamos(prestamos);
+
+      actualizarTodaLaUI();
+      mostrarToast(`Restaurados: ${libros.length} libros y ${prestamos.length} préstamos.`);
+    } catch (err) {
+      console.error('Error al parsear archivo importado:', err);
+      alert('Error al leer el archivo de respaldo: ' + err.message);
+    }
+  };
+
+  lector.readAsText(archivo);
+}
+
+// Eventos de Respaldo
+if (elements.btnExportarJSON) {
+  elements.btnExportarJSON.addEventListener('click', exportarDatosJSON);
+}
+
+if (elements.inputImportarJSON) {
+  elements.inputImportarJSON.addEventListener('change', (e) => {
+    const file = e.target.files[0];
+    if (file) {
+      importarDatosJSON(file);
+      e.target.value = ''; // Reset para poder importar el mismo archivo si es necesario
+    }
+  });
+}
+
+if (elements.btnCargarEjemplo) {
+  elements.btnCargarEjemplo.addEventListener('click', () => {
+    if (confirm('¿Cargar los datos de ejemplo (3 libros y 1 préstamo atrasado)?')) {
+      const { librosEjemplo, prestamosEjemplo } = generarDatosEjemplo();
+      libros = librosEjemplo;
+      prestamos = prestamosEjemplo;
+      guardarCatalogo(libros);
+      guardarPrestamos(prestamos);
+      actualizarTodaLaUI();
+      mostrarToast('Datos de ejemplo cargados.');
+    }
+  });
+}
+
+if (elements.btnBorrarTodo) {
+  elements.btnBorrarTodo.addEventListener('click', () => {
+    if (confirm('¿Seguro que deseas borrar TODOS los datos del aula? Esta acción no se puede deshacer.')) {
+      borrarTodo();
+      actualizarTodaLaUI();
+      mostrarToast('Todos los datos han sido borrados.');
     }
   });
 }
