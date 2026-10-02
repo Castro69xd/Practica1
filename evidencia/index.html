@@ -1,0 +1,166 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Evidencias del Proyecto - Biblioteca de Aula</title>
+  <style>
+    :root {
+      --bg: #0f172a;
+      --card-bg: #1e293b;
+      --border: #334155;
+      --text: #f8fafc;
+      --muted: #94a3b8;
+      --primary: #6366f1;
+    }
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body {
+      font-family: system-ui, -apple-system, sans-serif;
+      background-color: var(--bg);
+      color: var(--text);
+      line-height: 1.6;
+      padding: 24px 16px;
+    }
+    .container {
+      max-width: 900px;
+      margin: 0 auto;
+    }
+    header {
+      margin-bottom: 24px;
+      padding-bottom: 16px;
+      border-bottom: 2px solid var(--border);
+    }
+    h1 { font-size: 24px; font-weight: 800; color: #ffffff; }
+    p.subtitle { font-size: 16px; color: var(--muted); }
+    .grid {
+      display: grid;
+      grid-template-columns: 1fr;
+      gap: 24px;
+    }
+    .card {
+      background: var(--card-bg);
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      overflow: hidden;
+      padding: 18px;
+    }
+    .card h3 {
+      font-size: 18px;
+      font-weight: 700;
+      color: #ffffff;
+      margin-bottom: 6px;
+    }
+    .card p {
+      font-size: 15px;
+      color: var(--muted);
+      margin-bottom: 12px;
+    }
+    .img-wrap {
+      width: 100%;
+      border-radius: 8px;
+      overflow: hidden;
+      border: 1px solid var(--border);
+      background: #020617;
+    }
+    .img-wrap img {
+      width: 100%;
+      height: auto;
+      display: block;
+    }
+    .badge {
+      display: inline-block;
+      background: rgba(99, 102, 241, 0.2);
+      color: #818cf8;
+      font-size: 13px;
+      font-weight: 700;
+      padding: 2px 8px;
+      border-radius: 4px;
+      margin-bottom: 8px;
+    }
+    .back-btn {
+      display: inline-block;
+      margin-top: 24px;
+      color: #ffffff;
+      background: var(--primary);
+      text-decoration: none;
+      padding: 10px 18px;
+      border-radius: 6px;
+      font-weight: 700;
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <header>
+      <h1>📁 Evidencias de Desarrollo - Biblioteca de Aula</h1>
+      <p class="subtitle">Galería de capturas que documentan cada etapa y evolución de la aplicación.</p>
+    </header>
+
+    <div class="grid">
+      <!-- 1 -->
+      <article class="card">
+        <span class="badge">Hito 1</span>
+        <h3>Fase 1: Versión Funcional Inicial</h3>
+        <p>Registro de libro (código, título, autor, estado), préstamo a persona con fecha acordada y lista de atrasados en HTML/CSS/JS puro.</p>
+        <div class="img-wrap">
+          <img src="./practicacap1.png" alt="Captura 1: Versión Funcional Inicial" loading="lazy">
+        </div>
+      </article>
+
+      <!-- 2 -->
+      <article class="card">
+        <span class="badge">Hito 2</span>
+        <h3>Fase 2: Interfaz Móvil Android Estilo Anime y README</h3>
+        <p>Incorporación de diseño Android moderno, gradientes Sakura e Indigo, navegación inferior táctil y documentación completa del repositorio.</p>
+        <div class="img-wrap">
+          <img src="./practicacap2.png" alt="Captura 2: Diseño Android Anime y README" loading="lazy">
+        </div>
+      </article>
+
+      <!-- 3 -->
+      <article class="card">
+        <span class="badge">Hito 3</span>
+        <h3>Fase 3: Persistencia con localStorage y Respaldo JSON</h3>
+        <p>Almacenamiento persistente en el dispositivo del encargado, descarga y restauración de archivos de respaldo `.json` y datos de ejemplo.</p>
+        <div class="img-wrap">
+          <img src="./practicacap3.png" alt="Captura 3: Persistencia en localStorage" loading="lazy">
+        </div>
+      </article>
+
+      <!-- 4 -->
+      <article class="card">
+        <span class="badge">Hito 4</span>
+        <h3>Fase 4: Accesibilidad, Contraste Solar y 320 px</h3>
+        <p>Texto mínimo de 16 px en toda la app, contraste para lectura bajo luz solar directa, etiquetas visibles y regla de un solo botón principal.</p>
+        <div class="img-wrap">
+          <img src="./practicacap4.png" alt="Captura 4: Accesibilidad y Alto Contraste" loading="lazy">
+        </div>
+      </article>
+
+      <!-- 5 -->
+      <article class="card">
+        <span class="badge">Hito 5</span>
+        <h3>Fase 5: Auditoría de QA y Pruebas Destructivas</h3>
+        <p>Blindaje frente a 10 vectores de error (fechas paradójicas, desbordes de 500 caracteres, doble clic, inyecciones y sincronización entre pestañas).</p>
+        <div class="img-wrap">
+          <img src="./practicacap5.png" alt="Captura 5: Auditoría de QA" loading="lazy">
+        </div>
+      </article>
+
+      <!-- 6 -->
+      <article class="card">
+        <span class="badge">Hito 6</span>
+        <h3>Fase 6: Integración con Gemini API</h3>
+        <p>Reporte tabular del acervo, redacción de recordatorios empáticos con `responseSchema`, datos de prueba (Mock) y fallback con plantilla fija.</p>
+        <div class="img-wrap">
+          <img src="./practicacap6.png" alt="Captura 6: Integración con Gemini API" loading="lazy">
+        </div>
+      </article>
+    </div>
+
+    <p style="text-align: center;">
+      <a href="../" class="back-btn">⬅ Volver a la Aplicación</a>
+    </p>
+  </div>
+</body>
+</html>
