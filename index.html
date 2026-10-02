@@ -1,0 +1,271 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Biblioteca de Aula</title>
+  <meta name="description" content="Control de préstamos de libros de aula y seguimiento de atrasos.">
+  <meta property="og:title" content="Biblioteca de Aula">
+  <meta property="og:description" content="Control de préstamos de libros de aula y seguimiento de atrasos.">
+  <meta property="og:type" content="website">
+  <meta name="twitter:card" content="summary">
+
+  <!-- Estilos puros sin dependencias externas, listos para GitHub Pages -->
+  <link rel="stylesheet" href="./style.css">
+</head>
+<body>
+  <div class="app-container">
+    
+    <!-- Encabezado principal superior -->
+    <header class="header">
+      <div class="header-brand">
+        <div>
+          <h1 class="brand-title">📖 Biblioteca de Aula</h1>
+          <p class="brand-subtitle">Control de libros y préstamos</p>
+        </div>
+        <div id="overdueHeaderBadge" class="overdue-counter-pill hidden">
+          <span>⚠️</span>
+          <span id="overdueCountText">0 atrasados</span>
+        </div>
+      </div>
+    </header>
+
+    <!-- Notificación emergente temporal (Toast) -->
+    <div id="toast" class="toast" role="status" aria-live="polite"></div>
+
+    <!-- Contenido de las Vistas -->
+    <main class="main-content">
+      
+      <!-- ==========================================
+           VISTA 1: PRÉSTAMOS ATRASADOS
+           ========================================== -->
+      <section id="view-atrasados" class="view-panel active">
+        <div class="card">
+          <h2 class="card-title">Préstamos Atrasados</h2>
+          <p class="card-subtitle">Ordenados de mayor a menor según los días de atraso.</p>
+
+          <div id="atrasadosBanner" class="overdue-banner hidden">
+            <div class="overdue-banner-icon">⚠️</div>
+            <div class="overdue-banner-text">
+              <h4 id="atrasadosBannerTitle">Atención requerida</h4>
+              <p id="atrasadosBannerDesc">Hay libros que debieron ser devueltos.</p>
+            </div>
+          </div>
+
+          <!-- Contenedor dinámico de la lista de atrasados -->
+          <div id="listaAtrasadosContainer">
+            <!-- Se renderiza desde app.js -->
+          </div>
+        </div>
+      </section>
+
+      <!-- ==========================================
+           VISTA 2: PRESTAR LIBRO
+           ========================================== -->
+      <section id="view-prestar" class="view-panel">
+        <div class="card">
+          <h2 class="card-title">Nuevo Préstamo</h2>
+          <p class="card-subtitle">Registrá el préstamo a un estudiante o docente.</p>
+
+          <form id="formPrestar" novalidate>
+            <!-- Selección de libro disponible -->
+            <div class="form-group">
+              <label for="prestamoLibroSelect" class="form-label">
+                Libro a prestar <span class="required">*</span>
+              </label>
+              <select id="prestamoLibroSelect" class="form-select" required>
+                <option value="" disabled selected>Seleccioná un libro disponible...</option>
+              </select>
+              <small id="prestamoLibroHelp" class="item-meta" style="margin-top: 4px; display: block;">
+                <!-- Aviso si no hay libros -->
+              </small>
+            </div>
+
+            <!-- Nombre de la persona -->
+            <div class="form-group">
+              <label for="prestamoPersona" class="form-label">
+                Nombre de la persona <span class="required">*</span>
+              </label>
+              <input 
+                type="text" 
+                id="prestamoPersona" 
+                class="form-input" 
+                placeholder="Ej. Ana García" 
+                required 
+                autocomplete="off"
+              >
+            </div>
+
+            <!-- Fechas de préstamo y devolución -->
+            <div class="form-row">
+              <div class="form-group">
+                <label for="prestamoFechaInicio" class="form-label">
+                  Fecha de préstamo <span class="required">*</span>
+                </label>
+                <input 
+                  type="date" 
+                  id="prestamoFechaInicio" 
+                  class="form-input" 
+                  required
+                >
+              </div>
+
+              <div class="form-group">
+                <label for="prestamoFechaFin" class="form-label">
+                  Fecha de devolución <span class="required">*</span>
+                </label>
+                <input 
+                  type="date" 
+                  id="prestamoFechaFin" 
+                  class="form-input" 
+                  required
+                >
+              </div>
+            </div>
+
+            <!-- Atajos rápidos para fechas útiles en móvil -->
+            <div class="form-group">
+              <span class="form-label" style="font-size: 0.75rem; color: var(--text-muted);">Atajos para fecha de devolución:</span>
+              <div class="date-quick-actions">
+                <button type="button" class="btn-quick" id="btnDevAyer">Ayer (para probar atraso)</button>
+                <button type="button" class="btn-quick" id="btnDev7Dias">+7 días</button>
+                <button type="button" class="btn-quick" id="btnDev14Dias">+14 días</button>
+              </div>
+            </div>
+
+            <button type="submit" class="btn btn-primary" id="btnGuardarPrestamo">
+              Confirmar Préstamo
+            </button>
+          </form>
+        </div>
+      </section>
+
+      <!-- ==========================================
+           VISTA 3: REGISTRO Y CATÁLOGO DE LIBROS
+           ========================================== -->
+      <section id="view-libros" class="view-panel">
+        <!-- Formulario de nuevo libro -->
+        <div class="card">
+          <h2 class="card-title">Registrar Libro</h2>
+          <p class="card-subtitle">Ingresá los datos del libro para el inventario de aula.</p>
+
+          <form id="formLibro" novalidate>
+            <div class="form-row">
+              <div class="form-group">
+                <label for="libroCodigo" class="form-label">
+                  Código <span class="required">*</span>
+                </label>
+                <input 
+                  type="text" 
+                  id="libroCodigo" 
+                  class="form-input" 
+                  placeholder="Ej. LIB-001" 
+                  required 
+                  autocomplete="off"
+                >
+              </div>
+
+              <div class="form-group">
+                <label for="libroEstado" class="form-label">
+                  Estado <span class="required">*</span>
+                </label>
+                <select id="libroEstado" class="form-select" required>
+                  <option value="bueno">Bueno</option>
+                  <option value="regular">Regular</option>
+                  <option value="dañado">Dañado</option>
+                </select>
+              </div>
+            </div>
+
+            <div class="form-group">
+              <label for="libroTitulo" class="form-label">
+                Título del libro <span class="required">*</span>
+              </label>
+              <input 
+                type="text" 
+                id="libroTitulo" 
+                class="form-input" 
+                placeholder="Ej. Cien años de soledad" 
+                required 
+                autocomplete="off"
+              >
+            </div>
+
+            <div class="form-group">
+              <label for="libroAutor" class="form-label">
+                Autor <span class="required">*</span>
+              </label>
+              <input 
+                type="text" 
+                id="libroAutor" 
+                class="form-input" 
+                placeholder="Ej. Gabriel García Márquez" 
+                required 
+                autocomplete="off"
+              >
+            </div>
+
+            <button type="submit" class="btn btn-primary" id="btnGuardarLibro">
+              Guardar Libro
+            </button>
+          </form>
+        </div>
+
+        <!-- Inventario de libros registrados -->
+        <div class="card">
+          <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px;">
+            <h3 class="card-title" style="margin-bottom: 0;">Libros en el Aula</h3>
+            <span id="totalLibrosCount" class="item-meta">0 libros</span>
+          </div>
+          <div id="listaLibrosContainer">
+            <!-- Se renderiza desde app.js -->
+          </div>
+        </div>
+      </section>
+
+      <!-- ==========================================
+           VISTA 4: TODOS LOS PRÉSTAMOS (ACTIVOS / HISTORIAL)
+           ========================================== -->
+      <section id="view-prestamos" class="view-panel">
+        <div class="card">
+          <h2 class="card-title">Gestión de Préstamos</h2>
+          <p class="card-subtitle">Marcá devoluciones y revisá el historial.</p>
+          
+          <div id="listaTodosPrestamosContainer">
+            <!-- Se renderiza desde app.js -->
+          </div>
+        </div>
+      </section>
+
+    </main>
+
+    <!-- Barra de navegación táctil inferior (Bottom Nav) -->
+    <nav class="bottom-nav" aria-label="Navegación principal">
+      <button type="button" class="nav-tab active" data-view="view-atrasados">
+        <span class="tab-icon">⚠️</span>
+        <span>Atrasados</span>
+        <span id="tabBadgeAtrasados" class="tab-badge hidden">0</span>
+      </button>
+
+      <button type="button" class="nav-tab" data-view="view-prestar">
+        <span class="tab-icon">➕</span>
+        <span>Prestar</span>
+      </button>
+
+      <button type="button" class="nav-tab" data-view="view-libros">
+        <span class="tab-icon">📚</span>
+        <span>Libros</span>
+      </button>
+
+      <button type="button" class="nav-tab" data-view="view-prestamos">
+        <span class="tab-icon">📋</span>
+        <span>Historial</span>
+      </button>
+    </nav>
+
+  </div>
+
+  <!-- Lógica en JavaScript puro, sin frameworks y sin transpilación -->
+  <script src="./app.js"></script>
+</body>
+</html>

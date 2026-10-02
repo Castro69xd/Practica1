@@ -1,0 +1,6 @@
+{
+  "name": "Biblioteca de Aula",
+  "description": "Control de préstamos de libros de aula y seguimiento de atrasos.",
+  "requestFramePermissions": [],
+  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+}
