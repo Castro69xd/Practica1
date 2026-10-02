@@ -2,45 +2,45 @@
 <html lang="es">
 <head>
   <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0">
   <title>Biblioteca de Aula</title>
-  <meta name="description" content="Control de libros de aula y seguimiento de atrasos con estética anime moderna.">
+  <meta name="description" content="Control de libros de aula y seguimiento de atrasos.">
   <meta property="og:title" content="Biblioteca de Aula">
-  <meta property="og:description" content="Control de libros de aula y seguimiento de atrasos con estética anime moderna.">
+  <meta property="og:description" content="Control de libros de aula y seguimiento de atrasos.">
   <meta property="og:type" content="website">
   <meta name="twitter:card" content="summary">
 
-  <!-- Configuración Android Web App / PWA Ready -->
-  <meta name="theme-color" content="#7c3aed">
+  <!-- Configuración móvil de alto contraste -->
+  <meta name="theme-color" content="#1e1b4b">
   <meta name="mobile-web-app-capable" content="yes">
-  <meta name="apple-mobile-web-app-capable" content="yes">
-  <meta name="apple-mobile-web-app-status-bar-style" content="default">
 
-  <!-- Estilos puros sin dependencias externas, listos para GitHub Pages -->
+  <!-- Estilos puros sin dependencias externas -->
   <link rel="stylesheet" href="./style.css">
 </head>
 <body>
   <div class="app-container">
     
-    <!-- Encabezado superior Android Top App Bar -->
+    <!-- Encabezado superior de alto contraste -->
     <header class="header">
       <div class="header-brand">
-        <div class="brand-wrapper">
-          <div class="brand-icon-anime" aria-hidden="true">✦</div>
-          <div>
-            <h1 class="brand-title">Biblioteca de Aula</h1>
-            <p class="brand-subtitle">Control de préstamos y devoluciones</p>
-          </div>
+        <div>
+          <h1 class="brand-title">Biblioteca de Aula</h1>
+          <p class="brand-subtitle">Control de préstamos</p>
         </div>
         <div id="overdueHeaderBadge" class="overdue-counter-pill hidden">
-          <span>⚡</span>
+          <span aria-hidden="true">⚠️</span>
           <span id="overdueCountText">0 atrasados</span>
         </div>
       </div>
     </header>
 
-    <!-- Notificación emergente flotante (Toast) -->
-    <div id="toast" class="toast" role="status" aria-live="polite"></div>
+    <!-- Área de Alertas Visibles en Pantalla (Éxito y Error en español sin tecnicismos) -->
+    <div style="padding: 14px 14px 0 14px;">
+      <div id="alertBanner" class="alert-banner hidden" role="alert">
+        <span id="alertIcon" class="alert-icon"></span>
+        <span id="alertText" class="alert-text"></span>
+      </div>
+    </div>
 
     <!-- Contenido de las Vistas -->
     <main class="main-content">
@@ -51,13 +51,13 @@
       <section id="view-atrasados" class="view-panel active">
         <div class="card">
           <h2 class="card-title">Préstamos Atrasados</h2>
-          <p class="card-subtitle">Ordenados del más atrasado al menos atrasado.</p>
+          <p class="card-subtitle">Ordenados del que lleva más días esperando al menor.</p>
 
           <div id="atrasadosBanner" class="overdue-banner hidden">
-            <div class="overdue-banner-icon">🔥</div>
+            <span class="overdue-banner-icon" aria-hidden="true">⚠️</span>
             <div class="overdue-banner-text">
-              <h4 id="atrasadosBannerTitle">Plazo vencido</h4>
-              <p id="atrasadosBannerDesc">Hay libros pendientes de devolución en la sección.</p>
+              <h4 id="atrasadosBannerTitle">Plazo cumplido</h4>
+              <p id="atrasadosBannerDesc">Hay libros que todavía no fueron devueltos al aula.</p>
             </div>
           </div>
 
@@ -73,43 +73,41 @@
            ========================================== -->
       <section id="view-prestar" class="view-panel">
         <div class="card">
-          <h2 class="card-title">Nuevo Préstamo</h2>
-          <p class="card-subtitle">Asigná un libro disponible a un estudiante.</p>
+          <h2 class="card-title">Prestar un Libro</h2>
+          <p class="card-subtitle">Anotá a quién le entregás un libro del aula.</p>
 
           <form id="formPrestar" novalidate>
-            <!-- Selección de libro disponible -->
+            <!-- 1. Selección de libro -->
             <div class="form-group">
               <label for="prestamoLibroSelect" class="form-label">
-                Libro a prestar <span class="required">*</span>
+                Libro a prestar <span class="required-text">(obligatorio)</span>
               </label>
               <select id="prestamoLibroSelect" class="form-select" required>
-                <option value="" disabled selected>Seleccioná un libro disponible...</option>
+                <option value="" disabled selected>Elegí un libro disponible...</option>
               </select>
-              <small id="prestamoLibroHelp" class="item-meta" style="margin-top: 4px; display: block;">
-                <!-- Aviso de disponibilidad -->
-              </small>
+              <div id="prestamoLibroHelp" class="item-meta" style="margin-top: 6px;"></div>
             </div>
 
-            <!-- Nombre de la persona -->
+            <!-- 2. Nombre de la persona -->
             <div class="form-group">
               <label for="prestamoPersona" class="form-label">
-                Nombre de la persona <span class="required">*</span>
+                Nombre de la persona <span class="required-text">(obligatorio)</span>
               </label>
               <input 
                 type="text" 
                 id="prestamoPersona" 
                 class="form-input" 
-                placeholder="Ej. Ana García" 
+                placeholder="Ejemplo: Ana Gómez" 
                 required 
                 autocomplete="off"
               >
             </div>
 
-            <!-- Fechas de préstamo y devolución -->
+            <!-- 3. Fechas de préstamo y devolución -->
             <div class="form-row">
               <div class="form-group">
                 <label for="prestamoFechaInicio" class="form-label">
-                  Fecha de préstamo <span class="required">*</span>
+                  Fecha de entrega <span class="required-text">(obligatorio)</span>
                 </label>
                 <input 
                   type="date" 
@@ -121,7 +119,7 @@
 
               <div class="form-group">
                 <label for="prestamoFechaFin" class="form-label">
-                  Fecha de devolución <span class="required">*</span>
+                  Fecha acordada de devolución <span class="required-text">(obligatorio)</span>
                 </label>
                 <input 
                   type="date" 
@@ -132,16 +130,17 @@
               </div>
             </div>
 
-            <!-- Atajos rápidos para fechas útiles en móvil -->
+            <!-- Botones secundarios de atajo rápido para fechas -->
             <div class="form-group">
-              <span class="form-label" style="font-size: 0.75rem; color: var(--text-muted);">Atajos rápidos de devolución:</span>
+              <span class="form-label" style="margin-bottom: 4px;">Atajos para fecha de devolución:</span>
               <div class="date-quick-actions">
                 <button type="button" class="btn-quick" id="btnDevAyer">Ayer (probar atraso)</button>
-                <button type="button" class="btn-quick" id="btnDev7Dias">+7 días</button>
-                <button type="button" class="btn-quick" id="btnDev14Dias">+14 días</button>
+                <button type="button" class="btn-quick" id="btnDev7Dias">En 7 días</button>
+                <button type="button" class="btn-quick" id="btnDev14Dias">En 14 días</button>
               </div>
             </div>
 
+            <!-- ÚNICO BOTÓN PRINCIPAL DE ESTA PANTALLA -->
             <button type="submit" class="btn btn-primary" id="btnGuardarPrestamo">
               Confirmar Préstamo
             </button>
@@ -156,19 +155,19 @@
         <!-- Formulario de nuevo libro -->
         <div class="card">
           <h2 class="card-title">Registrar Libro</h2>
-          <p class="card-subtitle">Añadí un nuevo ejemplar al catálogo del aula.</p>
+          <p class="card-subtitle">Agregá un libro nuevo al estante del aula.</p>
 
           <form id="formLibro" novalidate>
             <div class="form-row">
               <div class="form-group">
                 <label for="libroCodigo" class="form-label">
-                  Código <span class="required">*</span>
+                  Código del libro <span class="required-text">(obligatorio)</span>
                 </label>
                 <input 
                   type="text" 
                   id="libroCodigo" 
                   class="form-input" 
-                  placeholder="Ej. LIB-001" 
+                  placeholder="Ejemplo: LIB-001" 
                   required 
                   autocomplete="off"
                 >
@@ -176,7 +175,7 @@
 
               <div class="form-group">
                 <label for="libroEstado" class="form-label">
-                  Estado <span class="required">*</span>
+                  Estado físico <span class="required-text">(obligatorio)</span>
                 </label>
                 <select id="libroEstado" class="form-select" required>
                   <option value="bueno">Bueno</option>
@@ -188,13 +187,13 @@
 
             <div class="form-group">
               <label for="libroTitulo" class="form-label">
-                Título del libro <span class="required">*</span>
+                Título del libro <span class="required-text">(obligatorio)</span>
               </label>
               <input 
                 type="text" 
                 id="libroTitulo" 
                 class="form-input" 
-                placeholder="Ej. Cien años de soledad" 
+                placeholder="Ejemplo: Cien años de soledad" 
                 required 
                 autocomplete="off"
               >
@@ -202,29 +201,30 @@
 
             <div class="form-group">
               <label for="libroAutor" class="form-label">
-                Autor <span class="required">*</span>
+                Autor o autora <span class="required-text">(obligatorio)</span>
               </label>
               <input 
                 type="text" 
                 id="libroAutor" 
                 class="form-input" 
-                placeholder="Ej. Gabriel García Márquez" 
+                placeholder="Ejemplo: Gabriel García Márquez" 
                 required 
                 autocomplete="off"
               >
             </div>
 
+            <!-- ÚNICO BOTÓN PRINCIPAL DE ESTA PANTALLA -->
             <button type="submit" class="btn btn-primary" id="btnGuardarLibro">
-              Guardar Libro
+              Guardar Libro en el Aula
             </button>
           </form>
         </div>
 
         <!-- Inventario de libros registrados -->
         <div class="card">
-          <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px;">
-            <h3 class="card-title" style="margin-bottom: 0;">Libros del Aula</h3>
-            <span id="totalLibrosCount" class="item-meta">0 libros</span>
+          <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px; gap: 8px;">
+            <h3 class="card-title" style="margin-bottom: 0;">Libros en el Aula</h3>
+            <span id="totalLibrosCount" class="code-tag">0 libros</span>
           </div>
           <div id="listaLibrosContainer">
             <!-- Renderizado dinámicamente desde app.js -->
@@ -233,74 +233,75 @@
       </section>
 
       <!-- ==========================================
-           VISTA 4: TODOS LOS PRÉSTAMOS (HISTORIAL / ACTIVOS)
+           VISTA 4: HISTORIAL Y GESTIÓN DE DATOS
            ========================================== -->
       <section id="view-prestamos" class="view-panel">
         <div class="card">
-          <h2 class="card-title">Gestión de Préstamos</h2>
-          <p class="card-subtitle">Marcá devoluciones y visualizá el historial.</p>
+          <h2 class="card-title">Todos los Préstamos</h2>
+          <p class="card-subtitle">Revisá quién tiene libros y quién ya los devolvió.</p>
           
           <div id="listaTodosPrestamosContainer">
             <!-- Renderizado dinámicamente desde app.js -->
           </div>
         </div>
 
-        <!-- Respaldo y Gestión de Datos en localStorage -->
+        <!-- Respaldo de datos con un único botón principal -->
         <div class="card">
-          <h3 class="card-title">💾 Copia de Seguridad y Datos</h3>
-          <p class="card-subtitle">Tus datos están guardados localmente en este dispositivo.</p>
+          <h3 class="card-title">Copia de Seguridad</h3>
+          <p class="card-subtitle">Guardá una copia de todos los libros en tu teléfono o computadora.</p>
 
-          <div style="display: flex; flex-direction: column; gap: 8px;">
+          <div style="display: flex; flex-direction: column; gap: 12px;">
+            <!-- ÚNICO BOTÓN PRINCIPAL DE ESTA PANTALLA -->
             <button type="button" class="btn btn-primary" id="btnExportarJSON">
-              📥 Exportar Respaldo (Descargar JSON)
+              Descargar Copia de Seguridad
             </button>
 
-            <label class="btn btn-outline" style="cursor: pointer; text-align: center;">
-              📤 Importar Respaldo (.json)
+            <!-- Botones secundarios -->
+            <label class="btn btn-secondary" style="cursor: pointer; text-align: center;">
+              Restaurar desde un Archivo
               <input type="file" id="inputImportarJSON" accept=".json" style="display: none;">
             </label>
 
-            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 8px; margin-top: 4px;">
-              <button type="button" class="btn-quick" id="btnCargarEjemplo" style="text-align: center; justify-content: center;">
-                🔄 Cargar Ejemplo
-              </button>
-              <button type="button" class="btn-quick" id="btnBorrarTodo" style="color: var(--danger-main); border-color: var(--danger-border); text-align: center; justify-content: center;">
-                🗑️ Borrar Datos
-              </button>
-            </div>
+            <button type="button" class="btn btn-secondary" id="btnCargarEjemplo">
+              Cargar Libros de Ejemplo
+            </button>
+
+            <button type="button" class="btn btn-secondary" id="btnBorrarTodo" style="color: var(--error-border); border-color: var(--error-border);">
+              Borrar Todos los Datos del Aula
+            </button>
           </div>
         </div>
       </section>
 
     </main>
 
-    <!-- Barra de navegación táctil estilo Android Floating Pill -->
+    <!-- Barra de navegación táctil inferior (Texto claro >= 16px, accesible con una mano) -->
     <nav class="bottom-nav" aria-label="Navegación principal">
       <button type="button" class="nav-tab active" data-view="view-atrasados">
-        <span class="tab-icon">⚡</span>
-        <span>Atrasados</span>
+        <span class="tab-icon" aria-hidden="true">⚠️</span>
+        <span>Atrasos</span>
         <span id="tabBadgeAtrasados" class="tab-badge hidden">0</span>
       </button>
 
       <button type="button" class="nav-tab" data-view="view-prestar">
-        <span class="tab-icon">📖</span>
+        <span class="tab-icon" aria-hidden="true">🤝</span>
         <span>Prestar</span>
       </button>
 
       <button type="button" class="nav-tab" data-view="view-libros">
-        <span class="tab-icon">📚</span>
+        <span class="tab-icon" aria-hidden="true">📚</span>
         <span>Libros</span>
       </button>
 
       <button type="button" class="nav-tab" data-view="view-prestamos">
-        <span class="tab-icon">📋</span>
+        <span class="tab-icon" aria-hidden="true">📋</span>
         <span>Historial</span>
       </button>
     </nav>
 
   </div>
 
-  <!-- Lógica en JavaScript puro, sin dependencias y sin transpilación -->
+  <!-- Lógica en JavaScript puro -->
   <script src="./app.js"></script>
 </body>
 </html>

@@ -1,54 +1,58 @@
 /* ==========================================================================
-   Biblioteca de Aula - Estilos Android Innovador / Estilo Anime Moderno
-   Inspirado en interfaces anime contemporáneas (Makoto Shinkai / Persona UI / Cyber-Chic)
-   Optimizada para Android (PWA/Mobile First), táctil y fluida.
+   Biblioteca de Aula - Estilos de Alto Contraste y Accesibilidad Móvil
+   Requisitos estrictos:
+   1. Funciona desde 320px de ancho, con una sola mano y sin hacer zoom.
+   2. Alto contraste para leerse bajo el sol; texto NUNCA menor a 16px.
+   3. Todos los campos con etiquetas visibles.
+   4. Un solo botón principal por pantalla (los demás secundarios).
+   5. Estados vacíos claros y motivadores.
+   6. Mensajes de éxito y error en español sin palabras técnicas.
    ========================================================================== */
 
 :root {
-  /* Paleta Anime Moderno: Fondos sutiles, Sakura Pink, Electric Indigo & Mint */
-  --bg-gradient: linear-gradient(145deg, #f0f4ff 0%, #fdf2f8 50%, #f5f3ff 100%);
-  --surface: rgba(255, 255, 255, 0.92);
-  --surface-solid: #ffffff;
-  --surface-glass: rgba(255, 255, 255, 0.78);
-  --border-subtle: rgba(226, 232, 240, 0.85);
-  --border-anime: rgba(147, 51, 234, 0.2);
+  /* Paleta de Máximo Contraste (Apta para luz solar directa / WCAG AAA) */
+  --bg-app: #f1f5f9;
+  --surface: #ffffff;
+  --surface-alt: #f8fafc;
+  --border-strong: #334155;
+  --border-field: #475569;
+  
+  --text-main: #020617;     /* Negro casi puro para máxima legibilidad al sol */
+  --text-muted: #1e293b;    /* Contraste fuerte incluso en textos secundarios */
+  
+  /* Botón Principal (Uno solo por pantalla) */
+  --primary-bg: #1e1b4b;    /* Azul índigo muy oscuro */
+  --primary-hover: #0f172a;
+  --primary-text: #ffffff;
 
-  --text-main: #0f172a;
-  --text-muted: #64748b;
-  --text-light: #94a3b8;
+  /* Botones Secundarios */
+  --secondary-bg: #ffffff;
+  --secondary-border: #334155;
+  --secondary-text: #0f172a;
+  --secondary-hover: #f1f5f9;
 
-  /* Colores temáticos Anime */
-  --anime-purple: #7c3aed;
-  --anime-pink: #ec4899;
-  --anime-cyan: #06b6d4;
-  --anime-gradient: linear-gradient(135deg, #6366f1 0%, #a855f7 50%, #ec4899 100%);
-  --anime-glow: 0 4px 18px rgba(168, 85, 247, 0.28);
+  /* Alertas de Éxito (Alto contraste) */
+  --success-bg: #dcfce7;
+  --success-border: #15803d;
+  --success-text: #052e16;
 
-  /* Estados */
-  --danger-main: #f43f5e;
-  --danger-bg: #fff1f2;
-  --danger-border: #fecdd3;
-  --danger-glow: 0 4px 14px rgba(244, 63, 94, 0.2);
+  /* Alertas de Error (Alto contraste) */
+  --error-bg: #fee2e2;
+  --error-border: #b91c1c;
+  --error-text: #450a0a;
 
-  --success-main: #10b981;
-  --success-bg: #ecfdf5;
-  --success-border: #a7f3d0;
+  /* Atrasos destacados */
+  --danger-tag-bg: #ffe4e6;
+  --danger-tag-border: #e11d48;
+  --danger-tag-text: #881337;
 
-  --warning-main: #f59e0b;
-  --warning-bg: #fffbeb;
-  --warning-border: #fde68a;
-
-  --radius-xs: 8px;
-  --radius-sm: 12px;
-  --radius-md: 18px;
-  --radius-lg: 24px;
-  --radius-pill: 9999px;
-
-  --shadow-card: 0 6px 20px -4px rgba(15, 23, 42, 0.07), 0 2px 8px -2px rgba(15, 23, 42, 0.04);
-  --shadow-floating: 0 10px 28px -6px rgba(99, 102, 241, 0.22);
+  /* Tamaños táctiles */
+  --touch-target: 48px;
+  --radius-sm: 8px;
+  --radius-md: 14px;
 }
 
-/* Reset táctil para Android */
+/* Reset y prevención de desbordamiento horizontal */
 * {
   box-sizing: border-box;
   margin: 0;
@@ -56,543 +60,538 @@
   -webkit-tap-highlight-color: transparent;
 }
 
-body {
-  font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
-  background: var(--bg-gradient);
-  background-attachment: fixed;
+/* REGLA ESTRICTA: Texto base 16px. Ningún elemento bajará de 16px */
+html, body {
+  font-size: 16px;
+  font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Arial, sans-serif;
+  background-color: var(--bg-app);
   color: var(--text-main);
-  min-height: 100vh;
   line-height: 1.5;
   -webkit-font-smoothing: antialiased;
-  padding-bottom: 96px; /* Espacio para barra de navegación flotante estilo Android */
+  overflow-x: hidden;
 }
 
-/* Contenedor central Android */
+body {
+  /* Espacio inferior para que la barra de navegación no tape contenido */
+  padding-bottom: 96px;
+}
+
+/* Contenedor optimizado desde 320px de ancho */
 .app-container {
+  width: 100%;
+  min-width: 320px;
   max-width: 480px;
   margin: 0 auto;
   min-height: 100vh;
   display: flex;
   flex-direction: column;
-  position: relative;
 }
 
-/* Top App Bar estilo Android con toque Anime */
+/* Encabezado superior de alto contraste */
 .header {
   position: sticky;
   top: 0;
   z-index: 30;
-  backdrop-filter: blur(14px);
-  -webkit-backdrop-filter: blur(14px);
-  background: rgba(255, 255, 255, 0.82);
-  border-bottom: 1px solid rgba(226, 232, 240, 0.7);
-  padding: 14px 18px;
-  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.02);
+  background-color: var(--surface);
+  border-bottom: 2px solid var(--border-strong);
+  padding: 14px 16px;
 }
 
 .header-brand {
   display: flex;
   align-items: center;
   justify-content: space-between;
-}
-
-.brand-wrapper {
-  display: flex;
-  align-items: center;
   gap: 10px;
 }
 
-.brand-icon-anime {
-  width: 38px;
-  height: 38px;
-  border-radius: var(--radius-sm);
-  background: var(--anime-gradient);
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  font-size: 1.25rem;
-  box-shadow: var(--anime-glow);
-  color: #ffffff;
-}
-
 .brand-title {
-  font-size: 1.15rem;
+  font-size: 20px;
   font-weight: 800;
-  letter-spacing: -0.02em;
-  background: linear-gradient(120deg, #1e1b4b 20%, #4338ca 60%, #ec4899 100%);
-  -webkit-background-clip: text;
-  -webkit-text-fill-color: transparent;
+  color: var(--text-main);
+  line-height: 1.2;
 }
 
 .brand-subtitle {
-  font-size: 0.75rem;
-  font-weight: 500;
+  font-size: 16px;
+  font-weight: 600;
   color: var(--text-muted);
+  margin-top: 2px;
 }
 
 .overdue-counter-pill {
-  background: var(--danger-bg);
-  color: var(--danger-main);
-  border: 1px solid var(--danger-border);
-  font-size: 0.78rem;
-  font-weight: 700;
-  padding: 4px 10px;
-  border-radius: var(--radius-pill);
+  background-color: var(--danger-tag-bg);
+  color: var(--danger-tag-text);
+  border: 2px solid var(--danger-tag-border);
+  font-size: 16px;
+  font-weight: 800;
+  padding: 6px 12px;
+  border-radius: 9999px;
   display: inline-flex;
   align-items: center;
   gap: 6px;
-  box-shadow: var(--danger-glow);
-  animation: pulseAnime 2s infinite ease-in-out;
+  white-space: nowrap;
 }
 
 .overdue-counter-pill.hidden {
   display: none;
 }
 
-@keyframes pulseAnime {
-  0%, 100% { transform: scale(1); }
-  50% { transform: scale(1.04); }
-}
-
-/* Área de contenido */
+/* Contenido Principal */
 .main-content {
-  padding: 16px;
+  padding: 14px;
   flex: 1;
 }
 
 /* Paneles de vista */
 .view-panel {
   display: none;
-  animation: slideFadeAnime 0.22s cubic-bezier(0.16, 1, 0.3, 1);
 }
 
 .view-panel.active {
   display: block;
 }
 
-@keyframes slideFadeAnime {
-  from { opacity: 0; transform: translateY(8px); }
-  to { opacity: 1; transform: translateY(0); }
-}
-
-/* Tarjetas Android Glassmorphism con bordes anime suaves */
-.card {
-  background: var(--surface);
-  backdrop-filter: blur(10px);
-  -webkit-backdrop-filter: blur(10px);
-  border: 1px solid rgba(255, 255, 255, 0.8);
-  border-radius: var(--radius-md);
-  padding: 18px;
+/* Mensajes de Alerta Visibles (Éxito y Error) en la pantalla */
+.alert-banner {
+  padding: 14px 16px;
+  border-radius: var(--radius-sm);
+  font-size: 16px;
+  font-weight: 700;
   margin-bottom: 16px;
-  box-shadow: var(--shadow-card);
-  position: relative;
-  overflow: hidden;
+  display: flex;
+  align-items: flex-start;
+  gap: 10px;
+  border-width: 2px;
+  border-style: solid;
 }
 
-.card::before {
-  content: "";
-  position: absolute;
-  top: 0;
-  left: 0;
-  right: 0;
-  height: 3px;
-  background: var(--anime-gradient);
-  opacity: 0.9;
+.alert-banner.hidden {
+  display: none;
+}
+
+.alert-success {
+  background-color: var(--success-bg);
+  border-color: var(--success-border);
+  color: var(--success-text);
+}
+
+.alert-error {
+  background-color: var(--error-bg);
+  border-color: var(--error-border);
+  color: var(--error-text);
+}
+
+.alert-icon {
+  font-size: 20px;
+  line-height: 1;
+}
+
+.alert-text {
+  flex: 1;
+  line-height: 1.4;
+}
+
+/* Tarjetas */
+.card {
+  background-color: var(--surface);
+  border: 2px solid var(--border-strong);
+  border-radius: var(--radius-md);
+  padding: 16px;
+  margin-bottom: 16px;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.06);
 }
 
 .card-title {
-  font-size: 1.1rem;
+  font-size: 20px;
   font-weight: 800;
   color: var(--text-main);
-  letter-spacing: -0.01em;
-  margin-bottom: 2px;
+  margin-bottom: 4px;
+  line-height: 1.25;
 }
 
 .card-subtitle {
-  font-size: 0.82rem;
+  font-size: 16px;
+  font-weight: 600;
   color: var(--text-muted);
   margin-bottom: 16px;
 }
 
-/* Inputs y Selects táctiles estilo Android */
+/* Formularios y Etiquetas Visibles */
 .form-group {
-  margin-bottom: 14px;
+  margin-bottom: 16px;
 }
 
 .form-label {
   display: block;
-  font-size: 0.82rem;
-  font-weight: 600;
+  font-size: 16px;
+  font-weight: 800;
   color: var(--text-main);
-  margin-bottom: 6px;
+  margin-bottom: 8px;
 }
 
-.form-label .required {
-  color: var(--danger-main);
-  margin-left: 2px;
+.form-label .required-text {
+  font-size: 16px;
+  font-weight: 700;
+  color: var(--error-border);
 }
 
+/* Entradas de formulario: mín. 48px táctil y mín. 16px de letra */
 .form-input,
 .form-select {
   width: 100%;
-  font-size: 16px; /* Previene auto-zoom en teléfonos */
+  font-size: 16px;
+  font-weight: 600;
   font-family: inherit;
   padding: 12px 14px;
-  border: 1.5px solid var(--border-subtle);
+  border: 2px solid var(--border-field);
   border-radius: var(--radius-sm);
-  background: var(--surface-solid);
+  background-color: #ffffff;
   color: var(--text-main);
-  min-height: 48px; /* Hitbox estándar de Material You */
-  transition: all 0.2s ease;
+  min-height: var(--touch-target);
+  transition: border-color 0.15s ease;
 }
 
 .form-input:focus,
 .form-select:focus {
   outline: none;
-  border-color: var(--anime-purple);
-  box-shadow: 0 0 0 3px rgba(124, 58, 237, 0.15);
+  border-color: #1e1b4b;
+  box-shadow: 0 0 0 3px rgba(30, 27, 75, 0.25);
 }
 
+/* Fila de formulario responsive: en pantallas de 320px pasa a columna única */
 .form-row {
   display: grid;
-  grid-template-columns: 1fr 1fr;
-  gap: 12px;
+  grid-template-columns: 1fr;
+  gap: 14px;
 }
 
-/* Atajos rápidos para fechas con botones anime pill */
+@media (min-width: 420px) {
+  .form-row {
+    grid-template-columns: 1fr 1fr;
+  }
+}
+
+/* Atajos rápidos para fechas */
 .date-quick-actions {
   display: flex;
   gap: 8px;
-  margin-top: 6px;
+  margin-top: 8px;
   flex-wrap: wrap;
 }
 
 .btn-quick {
-  background: rgba(243, 232, 255, 0.6);
-  border: 1px solid rgba(168, 85, 247, 0.3);
-  color: var(--anime-purple);
-  font-size: 0.78rem;
-  font-weight: 600;
-  padding: 6px 12px;
-  border-radius: var(--radius-pill);
+  background-color: var(--surface-alt);
+  border: 2px solid var(--border-strong);
+  color: var(--text-main);
+  font-size: 16px;
+  font-weight: 700;
+  padding: 8px 14px;
+  border-radius: var(--radius-sm);
   cursor: pointer;
-  min-height: 34px;
-  transition: all 0.15s ease;
+  min-height: var(--touch-target);
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
 }
 
 .btn-quick:active {
-  background: var(--anime-purple);
+  background-color: var(--border-strong);
   color: #ffffff;
-  transform: scale(0.96);
 }
 
-/* Botones principales estilo anime gradient con respuesta háptica visual */
+/* ==========================================================================
+   BOTONES: REGLA DE UN SOLO BOTÓN PRINCIPAL POR PANTALLA
+   ========================================================================== */
+
+/* Botón base */
 .btn {
   display: inline-flex;
   align-items: center;
   justify-content: center;
   width: 100%;
-  min-height: 48px;
-  padding: 12px 20px;
-  font-size: 0.95rem;
-  font-weight: 700;
+  min-height: var(--touch-target);
+  padding: 12px 18px;
+  font-size: 16px;
+  font-weight: 800;
   border-radius: var(--radius-sm);
-  border: none;
   cursor: pointer;
-  letter-spacing: 0.01em;
-  transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1);
   text-decoration: none;
+  transition: background-color 0.15s ease, transform 0.05s ease;
+  line-height: 1.2;
 }
 
 .btn:active {
-  transform: scale(0.98);
+  transform: scale(0.99);
 }
 
+/* BOTÓN PRINCIPAL: Único con fondo oscuro dominante */
 .btn-primary {
-  background: var(--anime-gradient);
-  color: #ffffff;
-  box-shadow: var(--anime-glow);
+  background-color: var(--primary-bg);
+  color: var(--primary-text);
+  border: 2px solid var(--primary-bg);
 }
 
 .btn-primary:active {
-  box-shadow: 0 2px 8px rgba(168, 85, 247, 0.4);
+  background-color: var(--primary-hover);
 }
 
-.btn-success {
-  background: var(--success-bg);
-  border: 1px solid var(--success-border);
-  color: var(--success-main);
-  font-size: 0.82rem;
-  font-weight: 700;
-  min-height: 38px;
-  width: auto;
-  padding: 6px 14px;
-  border-radius: var(--radius-pill);
+/* BOTONES SECUNDARIOS: Fondo claro y borde definido */
+.btn-secondary {
+  background-color: var(--secondary-bg);
+  border: 2px solid var(--secondary-border);
+  color: var(--secondary-text);
 }
 
-.btn-success:active {
-  background: #d1fae5;
-  transform: scale(0.96);
+.btn-secondary:active {
+  background-color: var(--secondary-hover);
 }
 
-/* Banner de alerta anime */
+/* Botón secundario de devolución en ítems */
+.btn-action-return {
+  background-color: #ffffff;
+  border: 2px solid var(--success-border);
+  color: var(--success-border);
+  font-size: 16px;
+  font-weight: 800;
+  min-height: var(--touch-target);
+  width: 100%;
+  padding: 10px 14px;
+}
+
+.btn-action-return:active {
+  background-color: var(--success-bg);
+}
+
+/* Banner de atraso visible */
 .overdue-banner {
-  background: var(--danger-bg);
-  border: 1px solid var(--danger-border);
+  background-color: var(--danger-tag-bg);
+  border: 2px solid var(--danger-tag-border);
   border-radius: var(--radius-sm);
   padding: 14px 16px;
   margin-bottom: 16px;
   display: flex;
   align-items: center;
   gap: 12px;
-  box-shadow: var(--danger-glow);
+}
+
+.overdue-banner.hidden {
+  display: none;
 }
 
 .overdue-banner-icon {
-  font-size: 1.5rem;
+  font-size: 24px;
   line-height: 1;
 }
 
 .overdue-banner-text h4 {
-  font-size: 0.92rem;
+  font-size: 18px;
   font-weight: 800;
-  color: var(--danger-main);
+  color: var(--danger-tag-text);
 }
 
 .overdue-banner-text p {
-  font-size: 0.8rem;
-  color: #9f1239;
+  font-size: 16px;
+  font-weight: 600;
+  color: var(--danger-tag-text);
 }
 
 /* Tarjetas de elementos en lista */
 .item-card {
-  background: var(--surface-solid);
-  border: 1px solid var(--border-subtle);
+  background-color: #ffffff;
+  border: 2px solid var(--border-strong);
   border-radius: var(--radius-sm);
-  padding: 14px 16px;
-  margin-bottom: 12px;
+  padding: 16px;
+  margin-bottom: 14px;
   display: flex;
   flex-direction: column;
-  gap: 10px;
-  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.03);
-  transition: transform 0.15s ease;
+  gap: 12px;
 }
 
 .item-card.is-overdue {
-  border-left: 4px solid var(--danger-main);
-  background: linear-gradient(90deg, rgba(254, 242, 242, 0.6) 0%, #ffffff 15%);
+  border-left: 6px solid var(--danger-tag-border);
+  background-color: #fff9f9;
 }
 
 .item-header {
   display: flex;
-  align-items: flex-start;
-  justify-content: space-between;
-  gap: 8px;
-}
-
-.item-title {
-  font-size: 0.95rem;
-  font-weight: 700;
-  color: var(--text-main);
-}
-
-.item-badge-danger {
-  background: var(--danger-bg);
-  color: var(--danger-main);
-  border: 1px solid var(--danger-border);
-  font-weight: 800;
-  font-size: 0.78rem;
-  padding: 3px 10px;
-  border-radius: var(--radius-pill);
-  white-space: nowrap;
-  font-variant-numeric: tabular-nums;
-  box-shadow: var(--danger-glow);
-}
-
-.item-meta {
-  font-size: 0.82rem;
-  color: var(--text-muted);
-  display: flex;
-  flex-wrap: wrap;
-  align-items: center;
+  flex-direction: column;
   gap: 6px;
 }
 
-.item-meta-separator {
-  color: var(--text-light);
+@media (min-width: 360px) {
+  .item-header {
+    flex-direction: row;
+    align-items: flex-start;
+    justify-content: space-between;
+  }
+}
+
+.item-title {
+  font-size: 18px;
+  font-weight: 800;
+  color: var(--text-main);
+  line-height: 1.25;
+}
+
+.item-badge-danger {
+  background-color: var(--danger-tag-bg);
+  color: var(--danger-tag-text);
+  border: 2px solid var(--danger-tag-border);
+  font-weight: 800;
+  font-size: 16px;
+  padding: 4px 10px;
+  border-radius: var(--radius-sm);
+  display: inline-block;
+  align-self: flex-start;
+}
+
+.item-meta {
+  font-size: 16px;
+  font-weight: 600;
+  color: var(--text-muted);
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
 }
 
 .code-tag {
   font-family: ui-monospace, monospace;
-  background: #f1f5f9;
+  background-color: #e2e8f0;
   padding: 2px 8px;
-  border-radius: 6px;
-  font-size: 0.78rem;
-  font-weight: 700;
-  color: #334155;
-  border: 1px solid #cbd5e1;
+  border-radius: 4px;
+  font-size: 16px;
+  font-weight: 800;
+  color: #0f172a;
+  border: 1px solid #64748b;
+  display: inline-block;
+  width: fit-content;
 }
 
-/* Badges de estado de libros */
 .status-badge {
-  font-size: 0.72rem;
-  font-weight: 700;
-  padding: 2px 8px;
-  border-radius: var(--radius-pill);
-  text-transform: capitalize;
+  font-size: 16px;
+  font-weight: 800;
+  padding: 4px 10px;
+  border-radius: 4px;
+  display: inline-block;
+  width: fit-content;
 }
 
 .status-bueno {
-  background: var(--success-bg);
-  color: var(--success-main);
-  border: 1px solid var(--success-border);
+  background-color: var(--success-bg);
+  color: var(--success-text);
+  border: 2px solid var(--success-border);
 }
 
 .status-regular {
-  background: var(--warning-bg);
-  color: var(--warning-main);
-  border: 1px solid var(--warning-border);
+  background-color: #fef3c7;
+  color: #78350f;
+  border: 2px solid #d97706;
 }
 
 .status-dañado {
-  background: var(--danger-bg);
-  color: var(--danger-main);
-  border: 1px solid var(--danger-border);
+  background-color: var(--error-bg);
+  color: var(--error-text);
+  border: 2px solid var(--error-border);
 }
 
 .item-actions {
-  display: flex;
-  justify-content: flex-end;
-  border-top: 1px solid rgba(226, 232, 240, 0.6);
-  padding-top: 8px;
-  margin-top: 2px;
+  margin-top: 6px;
+  border-top: 1px solid #cbd5e1;
+  padding-top: 10px;
 }
 
-/* Estados vacíos */
+/* ==========================================================================
+   ESTADOS VACÍOS: CLAROS, VISIBLES Y MOTIVADORES
+   ========================================================================== */
 .empty-state {
   text-align: center;
-  padding: 40px 16px;
-  color: var(--text-muted);
+  padding: 24px 16px;
+  background-color: var(--surface-alt);
+  border: 2px dashed var(--border-strong);
+  border-radius: var(--radius-sm);
+  margin: 10px 0;
 }
 
 .empty-state-icon {
-  font-size: 2.5rem;
-  margin-bottom: 8px;
+  font-size: 36px;
+  margin-bottom: 10px;
 }
 
 .empty-state-title {
-  font-size: 1rem;
-  font-weight: 700;
+  font-size: 18px;
+  font-weight: 800;
   color: var(--text-main);
-  margin-bottom: 4px;
+  margin-bottom: 8px;
 }
 
 .empty-state-desc {
-  font-size: 0.82rem;
-  max-width: 280px;
-  margin: 0 auto;
-}
-
-/* Toast flotante anime */
-.toast {
-  position: fixed;
-  top: 16px;
-  left: 50%;
-  transform: translateX(-50%);
-  background: rgba(15, 23, 42, 0.92);
-  backdrop-filter: blur(12px);
-  -webkit-backdrop-filter: blur(12px);
-  color: #ffffff;
-  padding: 10px 20px;
-  border-radius: var(--radius-pill);
-  font-size: 0.85rem;
+  font-size: 16px;
   font-weight: 600;
-  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.25);
-  border: 1px solid rgba(255, 255, 255, 0.15);
-  z-index: 100;
-  opacity: 0;
-  pointer-events: none;
-  transition: all 0.25s cubic-bezier(0.16, 1, 0.3, 1);
+  color: var(--text-muted);
+  line-height: 1.45;
+  margin-bottom: 14px;
 }
 
-.toast.show {
-  opacity: 1;
-  top: 24px;
-}
-
-/* Barra de navegación inferior flotante Android Pill */
+/* Barra de Navegación Inferior (Táctil, con una mano, desde 320px) */
 .bottom-nav {
   position: fixed;
-  bottom: 14px;
-  left: 16px;
-  right: 16px;
-  max-width: 448px;
-  margin: 0 auto;
-  height: 64px;
-  background: rgba(255, 255, 255, 0.88);
-  backdrop-filter: blur(20px);
-  -webkit-backdrop-filter: blur(20px);
-  border: 1px solid rgba(255, 255, 255, 0.9);
-  border-radius: 32px;
-  box-shadow: var(--shadow-floating);
+  bottom: 0;
+  left: 0;
+  right: 0;
+  background-color: #ffffff;
+  border-top: 3px solid var(--border-strong);
   display: grid;
   grid-template-columns: repeat(4, 1fr);
-  align-items: center;
+  height: 72px;
   z-index: 40;
-  padding: 0 6px;
+  max-width: 480px;
+  margin: 0 auto;
 }
 
 .nav-tab {
   background: none;
   border: none;
-  color: #64748b;
+  color: #334155;
   display: flex;
   flex-direction: column;
   align-items: center;
   justify-content: center;
-  font-size: 0.72rem;
-  font-weight: 600;
+  font-size: 16px;
+  font-weight: 700;
   cursor: pointer;
-  padding: 6px 0;
+  padding: 4px 2px;
   position: relative;
-  transition: all 0.2s ease;
-  height: 52px;
-  border-radius: 26px;
+  min-height: var(--touch-target);
+  text-decoration: none;
 }
 
 .nav-tab .tab-icon {
-  font-size: 1.25rem;
+  font-size: 20px;
   line-height: 1;
   margin-bottom: 2px;
-  transition: transform 0.2s cubic-bezier(0.16, 1, 0.3, 1);
 }
 
 .nav-tab.active {
-  color: var(--anime-purple);
+  color: #1e1b4b;
   font-weight: 800;
-  background: rgba(124, 58, 237, 0.08);
-}
-
-.nav-tab.active .tab-icon {
-  transform: translateY(-2px) scale(1.15);
+  background-color: #e2e8f0;
 }
 
 .tab-badge {
   position: absolute;
   top: 4px;
-  right: calc(50% - 18px);
-  background: var(--danger-main);
+  right: calc(50% - 22px);
+  background-color: var(--error-border);
   color: #ffffff;
-  font-size: 0.68rem;
+  font-size: 16px;
   font-weight: 800;
-  min-width: 18px;
-  height: 18px;
-  border-radius: var(--radius-pill);
+  min-width: 22px;
+  height: 22px;
+  border-radius: 9999px;
   display: flex;
   align-items: center;
   justify-content: center;
   padding: 0 4px;
-  box-shadow: var(--danger-glow);
 }
 
 .tab-badge.hidden {

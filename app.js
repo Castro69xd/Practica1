@@ -252,22 +252,17 @@ function registrarLibro(codigo, titulo, autor, estado) {
   const tituloLimpio = titulo.trim();
   const autorLimpio = autor.trim();
 
-  // Validaciones
-  if (!codigoLimpio) throw new Error('El código del libro es obligatorio.');
-  if (!tituloLimpio) throw new Error('El título del libro es obligatorio.');
-  if (!autorLimpio) throw new Error('El autor del libro es obligatorio.');
+  // Validaciones en español claro sin tecnicismos
+  if (!codigoLimpio) throw new Error('Por favor, escribí el código del libro (por ejemplo: LIB-001).');
+  if (!tituloLimpio) throw new Error('Por favor, escribí el título del libro.');
+  if (!autorLimpio) throw new Error('Por favor, escribí el autor o autora del libro.');
   if (!['bueno', 'regular', 'dañado'].includes(estado)) {
-    throw new Error('El estado debe ser "bueno", "regular" o "dañado".');
+    throw new Error('Elegí el estado físico del libro: bueno, regular o dañado.');
   }
 
-  /**
-   * PUNTO DONDE ALGUIEN SUELE EQUIVOCARSE #3:
-   * Permitir registrar códigos de libro duplicados. Si dos libros tienen el
-   * mismo código, no se sabrá cuál se está prestando o devolviendo.
-   */
   const existe = libros.some(l => l.codigo.toUpperCase() === codigoLimpio);
   if (existe) {
-    throw new Error(`Ya existe un libro registrado con el código "${codigoLimpio}".`);
+    throw new Error(`Ya hay un libro guardado con el código "${codigoLimpio}". Por favor elegí un código distinto.`);
   }
 
   const nuevoLibro = {
@@ -275,7 +270,7 @@ function registrarLibro(codigo, titulo, autor, estado) {
     codigo: codigoLimpio,
     titulo: tituloLimpio,
     autor: autorLimpio,
-    estado: estado, // 'bueno' | 'regular' | 'dañado'
+    estado: estado,
     fechaRegistro: new Date().toISOString()
   };
 
@@ -291,22 +286,16 @@ function registrarLibro(codigo, titulo, autor, estado) {
 function prestarLibro(codigoLibro, persona, fechaPrestamo, fechaDevolucion) {
   const personaLimpia = persona.trim();
 
-  if (!codigoLibro) throw new Error('Debes seleccionar un libro.');
-  if (!personaLimpia) throw new Error('El nombre de la persona es obligatorio.');
-  if (!fechaPrestamo) throw new Error('La fecha de préstamo es obligatoria.');
-  if (!fechaDevolucion) throw new Error('La fecha de devolución es obligatoria.');
+  if (!codigoLibro) throw new Error('Por favor, elegí un libro disponible de la lista.');
+  if (!personaLimpia) throw new Error('Por favor, escribí el nombre de la persona que se lleva el libro.');
+  if (!fechaPrestamo) throw new Error('Por favor, indicá la fecha en la que se entrega el libro.');
+  if (!fechaDevolucion) throw new Error('Por favor, indicá la fecha acordada para la devolución.');
 
-  // Validar que el libro exista en el inventario
   const libro = libros.find(l => l.codigo === codigoLibro);
-  if (!libro) throw new Error('El libro seleccionado no existe.');
+  if (!libro) throw new Error('El libro seleccionado no se encuentra en el aula.');
 
-  /**
-   * PUNTO DONDE ALGUIEN SUELE EQUIVOCARSE #4:
-   * Prestar un libro que ya está en manos de otra persona.
-   * Si no se valida, el mismo ejemplar físico se presta múltiples veces.
-   */
   if (libroEstaPrestado(codigoLibro)) {
-    throw new Error(`El libro "${libro.titulo}" (${codigoLibro}) ya está prestado actualmente.`);
+    throw new Error(`El libro "${libro.titulo}" (${codigoLibro}) ya está prestado a otra persona. Tenés que esperar a que lo devuelva.`);
   }
 
   const nuevoPrestamo = {
@@ -315,9 +304,9 @@ function prestarLibro(codigoLibro, persona, fechaPrestamo, fechaDevolucion) {
     libroTitulo: libro.titulo,
     libroAutor: libro.autor,
     persona: personaLimpia,
-    fechaPrestamo: fechaPrestamo,     // YYYY-MM-DD
-    fechaDevolucion: fechaDevolucion, // YYYY-MM-DD
-    devuelto: false,                  // Booleano para control de devolución
+    fechaPrestamo: fechaPrestamo,
+    fechaDevolucion: fechaDevolucion,
+    devuelto: false,
     fechaDevolucionReal: null
   };
 
@@ -332,14 +321,14 @@ function prestarLibro(codigoLibro, persona, fechaPrestamo, fechaDevolucion) {
 function marcarComoDevuelto(prestamoId) {
   const prestamo = prestamos.find(p => p.id === prestamoId);
   if (!prestamo) {
-    throw new Error('Préstamo no encontrado.');
+    throw new Error('No se encontró el registro del préstamo.');
   }
 
   prestamo.devuelto = true;
   prestamo.fechaDevolucionReal = formatearFechaInput(new Date());
   guardarPrestamos(prestamos);
   actualizarTodaLaUI();
-  mostrarToast('Libro devuelto y registrado correctamente.');
+  mostrarMensajeExito(`¡Libro devuelto! "${prestamo.libroTitulo}" ya está disponible en el estante.`);
 }
 
 /**
@@ -385,6 +374,11 @@ const elements = {
   views: document.querySelectorAll('.view-panel'),
   toast: document.getElementById('toast'),
 
+  // Alerta visible en pantalla
+  alertBanner: document.getElementById('alertBanner'),
+  alertIcon: document.getElementById('alertIcon'),
+  alertText: document.getElementById('alertText'),
+
   // Badges de atraso
   overdueHeaderBadge: document.getElementById('overdueHeaderBadge'),
   overdueCountText: document.getElementById('overdueCountText'),
@@ -425,17 +419,38 @@ const elements = {
 };
 
 /**
- * Muestra notificación flotante momentánea
+ * Mensajes de Alerta Visibles en Pantalla (sin tecnicismos)
  */
-let toastTimeout;
+let alertTimeout;
+function mostrarMensajeExito(mensaje) {
+  if (!elements.alertBanner) return;
+  elements.alertBanner.className = 'alert-banner alert-success';
+  elements.alertIcon.textContent = '✅';
+  elements.alertText.textContent = mensaje;
+  elements.alertBanner.classList.remove('hidden');
+  clearTimeout(alertTimeout);
+  window.scrollTo({ top: 0, behavior: 'smooth' });
+  alertTimeout = setTimeout(() => {
+    elements.alertBanner.classList.add('hidden');
+  }, 5000);
+}
+
+function mostrarMensajeError(mensaje) {
+  if (!elements.alertBanner) return;
+  elements.alertBanner.className = 'alert-banner alert-error';
+  elements.alertIcon.textContent = '⚠️';
+  elements.alertText.textContent = mensaje;
+  elements.alertBanner.classList.remove('hidden');
+  clearTimeout(alertTimeout);
+  window.scrollTo({ top: 0, behavior: 'smooth' });
+  alertTimeout = setTimeout(() => {
+    elements.alertBanner.classList.add('hidden');
+  }, 6000);
+}
+
+// Compatibilidad
 function mostrarToast(mensaje) {
-  if (!elements.toast) return;
-  elements.toast.textContent = mensaje;
-  elements.toast.classList.add('show');
-  clearTimeout(toastTimeout);
-  toastTimeout = setTimeout(() => {
-    elements.toast.classList.remove('show');
-  }, 2500);
+  mostrarMensajeExito(mensaje);
 }
 
 /**
@@ -477,7 +492,7 @@ function renderizarAtrasados() {
       <div class="empty-state">
         <div class="empty-state-icon">✅</div>
         <div class="empty-state-title">No hay préstamos atrasados</div>
-        <p class="empty-state-desc">Todos los libros prestados están dentro del plazo acordado o ya fueron devueltos.</p>
+        <p class="empty-state-desc">Todos los libros prestados están dentro del plazo o ya fueron devueltos al aula.</p>
       </div>
     `;
     return;
@@ -492,7 +507,7 @@ function renderizarAtrasados() {
         <div class="item-header">
           <div>
             <h3 class="item-title">${escaparHTML(item.persona)}</h3>
-            <div class="item-meta" style="margin-top: 2px;">
+            <div class="item-meta" style="margin-top: 4px;">
               <span>Libro: <strong>${escaparHTML(item.libroTitulo)}</strong></span>
             </div>
           </div>
@@ -500,17 +515,15 @@ function renderizarAtrasados() {
         </div>
 
         <div class="item-meta">
-          <span class="code-tag">${escaparHTML(item.libroCodigo)}</span>
-          <span class="item-meta-separator">·</span>
-          <span>Autor: ${escaparHTML(item.libroAutor)}</span>
-          <span class="item-meta-separator">·</span>
-          <span>Debía volver: <strong>${formatearFechaLegible(item.fechaDevolucion)}</strong></span>
+          <div><span class="code-tag">${escaparHTML(item.libroCodigo)}</span></div>
+          <div>Autor: <strong>${escaparHTML(item.libroAutor)}</strong></div>
+          <div>Debía devolverse: <strong>${formatearFechaLegible(item.fechaDevolucion)}</strong></div>
         </div>
 
         <div class="item-actions">
           <button 
             type="button" 
-            class="btn btn-success" 
+            class="btn btn-action-return" 
             onclick="marcarComoDevuelto('${item.id}')"
           >
             ✓ Marcar como devuelto
@@ -531,24 +544,36 @@ function renderizarSelectorLibros() {
   const select = elements.prestamoLibroSelect;
   const help = elements.prestamoLibroHelp;
 
-  select.innerHTML = '<option value="" disabled selected>Seleccioná un libro disponible...</option>';
+  select.innerHTML = '<option value="" disabled selected>Elegí un libro disponible...</option>';
 
   if (libros.length === 0) {
-    help.textContent = 'Aún no registraste libros. Ve a la pestaña "Libros" para agregar el primero.';
+    help.innerHTML = `
+      <div class="empty-state" style="padding: 16px; margin: 8px 0;">
+        <div class="empty-state-title" style="font-size: 16px;">Todavía no hay ningún libro en la biblioteca</div>
+        <p class="empty-state-desc" style="font-size: 16px; margin-bottom: 10px;">Para hacer un préstamo, primero tenés que registrar libros en el aula.</p>
+        <button type="button" class="btn btn-secondary" onclick="cambiarPestaña('view-libros')">
+          Ir a registrar el primer libro
+        </button>
+      </div>
+    `;
     return;
   }
 
   if (disponibles.length === 0) {
-    help.textContent = 'Todos los libros registrados están actualmente en préstamo.';
+    help.innerHTML = `
+      <div style="background-color: var(--error-bg); color: var(--error-text); border: 2px solid var(--error-border); padding: 10px; border-radius: var(--radius-sm); font-weight: 700;">
+        Todos los libros registrados están actualmente prestados. Cuando los devuelvan, volverán a aparecer aquí.
+      </div>
+    `;
     return;
   }
 
-  help.textContent = `${disponibles.length} libro(s) disponible(s) para préstamo.`;
+  help.innerHTML = `<span style="font-weight: 700; color: var(--success-text);">Hay ${disponibles.length} libro(s) disponible(s) para préstamo.</span>`;
 
   disponibles.forEach(libro => {
     const opt = document.createElement('option');
     opt.value = libro.codigo;
-    opt.textContent = `[${libro.codigo}] ${libro.titulo} - ${libro.autor} (${libro.estado})`;
+    opt.textContent = `[${libro.codigo}] ${libro.titulo} - ${libro.autor}`;
     select.appendChild(opt);
   });
 }
@@ -562,38 +587,38 @@ function renderizarInventarioLibros() {
   if (libros.length === 0) {
     elements.listaLibrosContainer.innerHTML = `
       <div class="empty-state">
-        <div class="empty-state-icon">📚</div>
-        <div class="empty-state-title">No hay libros registrados</div>
-        <p class="empty-state-desc">Usa el formulario de arriba para registrar el primer libro de la sección.</p>
+        <div class="empty-state-icon" aria-hidden="true">📚</div>
+        <div class="empty-state-title">Aún no hay ningún libro registrado</div>
+        <p class="empty-state-desc">
+          El inventario del aula está vacío. ¡Registrá el primer libro usando el formulario de arriba para empezar a prestárselo a tus estudiantes!
+        </p>
       </div>
     `;
     return;
   }
 
   let html = '';
-  // Mostrar los más nuevos arriba
   const copiaInvertida = [...libros].reverse();
 
   copiaInvertida.forEach(l => {
     const prestado = libroEstaPrestado(l.codigo);
     const estadoPrestamo = prestado 
-      ? '<span style="color: var(--danger-badge); font-weight: 600;">En préstamo</span>' 
-      : '<span style="color: var(--success-text); font-weight: 600;">Disponible</span>';
+      ? '<span style="color: var(--error-border); font-weight: 800;">En préstamo</span>' 
+      : '<span style="color: var(--success-border); font-weight: 800;">Disponible</span>';
 
     html += `
       <article class="item-card">
         <div class="item-header">
           <div>
             <span class="code-tag">${escaparHTML(l.codigo)}</span>
-            <h4 class="item-title" style="margin-top: 4px;">${escaparHTML(l.titulo)}</h4>
+            <h4 class="item-title" style="margin-top: 6px;">${escaparHTML(l.titulo)}</h4>
           </div>
-          <span class="status-badge status-${escaparHTML(l.estado)}">${escaparHTML(l.estado)}</span>
+          <span class="status-badge status-${escaparHTML(l.estado)}">Estado: ${escaparHTML(l.estado)}</span>
         </div>
 
         <div class="item-meta">
-          <span>Autor: ${escaparHTML(l.autor)}</span>
-          <span class="item-meta-separator">·</span>
-          <span>${estadoPrestamo}</span>
+          <div>Autor: <strong>${escaparHTML(l.autor)}</strong></div>
+          <div>Situación: ${estadoPrestamo}</div>
         </div>
       </article>
     `;
@@ -752,12 +777,12 @@ if (elements.formLibro) {
 
       registrarLibro(codigo, titulo, autor, estado);
 
-      // Limpiar formulario y enfocar
+      // Limpiar formulario y notificar
       elements.formLibro.reset();
-      mostrarToast(`Libro "${codigo.toUpperCase()}" registrado con éxito.`);
       actualizarTodaLaUI();
+      mostrarMensajeExito(`¡Listo! El libro "${titulo}" (${codigo.toUpperCase()}) fue guardado en el aula.`);
     } catch (err) {
-      alert(err.message);
+      mostrarMensajeError(err.message);
     }
   });
 }
@@ -779,17 +804,16 @@ if (elements.formPrestar) {
       configurarFechasPorDefecto();
       actualizarTodaLaUI();
 
-      mostrarToast(`Préstamo a ${persona} confirmado.`);
+      mostrarMensajeExito(`¡Préstamo registrado! "${codigoLibro}" entregado a ${persona}.`);
 
-      // Si la fecha de devolución es anterior a hoy, cambiar automáticamente a la vista de atrasados
-      // para que el usuario vea inmediatamente el libro en atraso (criterio de aceptación).
+      // Si la fecha de devolución ya venció, cambiar a atrasados
       if (calcularDiasAtraso(fechaDevolucion) > 0) {
         cambiarPestaña('view-atrasados');
       } else {
         cambiarPestaña('view-prestamos');
       }
     } catch (err) {
-      alert(err.message);
+      mostrarMensajeError(err.message);
     }
   });
 }
@@ -814,15 +838,15 @@ function exportarDatosJSON() {
     const dataStr = 'data:text/json;charset=utf-8,' + encodeURIComponent(JSON.stringify(payload, null, 2));
     const downloadAnchor = document.createElement('a');
     downloadAnchor.setAttribute('href', dataStr);
-    downloadAnchor.setAttribute('download', `biblioteca_aula_respaldo_${formatearFechaInput(new Date())}.json`);
+    downloadAnchor.setAttribute('download', `copia_biblioteca_aula_${formatearFechaInput(new Date())}.json`);
     document.body.appendChild(downloadAnchor);
     downloadAnchor.click();
     downloadAnchor.remove();
 
-    mostrarToast('Respaldo descargado correctamente.');
+    mostrarMensajeExito('¡Copia de seguridad descargada en tu dispositivo!');
   } catch (error) {
     console.error('Error al exportar JSON:', error);
-    alert('No se pudo exportar el archivo de respaldo.');
+    mostrarMensajeError('No se pudo generar el archivo de copia de seguridad.');
   }
 }
 
@@ -837,7 +861,7 @@ function importarDatosJSON(archivo) {
     try {
       const contenido = JSON.parse(e.target.result);
       if (!Array.isArray(contenido.libros) || !Array.isArray(contenido.prestamos)) {
-        throw new Error('El archivo no contiene un formato de respaldo válido (faltan listas de libros o préstamos).');
+        throw new Error('El archivo seleccionado no corresponde a una copia válida de la biblioteca.');
       }
 
       libros = contenido.libros;
@@ -847,10 +871,10 @@ function importarDatosJSON(archivo) {
       guardarPrestamos(prestamos);
 
       actualizarTodaLaUI();
-      mostrarToast(`Restaurados: ${libros.length} libros y ${prestamos.length} préstamos.`);
+      mostrarMensajeExito(`¡Datos recuperados! Se restauraron ${libros.length} libros y ${prestamos.length} préstamos.`);
     } catch (err) {
-      console.error('Error al parsear archivo importado:', err);
-      alert('Error al leer el archivo de respaldo: ' + err.message);
+      console.error('Error al leer el archivo:', err);
+      mostrarMensajeError('No se pudo leer el archivo. Verificá que sea un archivo de respaldo válido.');
     }
   };
 
@@ -867,31 +891,31 @@ if (elements.inputImportarJSON) {
     const file = e.target.files[0];
     if (file) {
       importarDatosJSON(file);
-      e.target.value = ''; // Reset para poder importar el mismo archivo si es necesario
+      e.target.value = '';
     }
   });
 }
 
 if (elements.btnCargarEjemplo) {
   elements.btnCargarEjemplo.addEventListener('click', () => {
-    if (confirm('¿Cargar los datos de ejemplo (3 libros y 1 préstamo atrasado)?')) {
+    if (confirm('¿Querés cargar los 3 libros y el préstamo de ejemplo?')) {
       const { librosEjemplo, prestamosEjemplo } = generarDatosEjemplo();
       libros = librosEjemplo;
       prestamos = prestamosEjemplo;
       guardarCatalogo(libros);
       guardarPrestamos(prestamos);
       actualizarTodaLaUI();
-      mostrarToast('Datos de ejemplo cargados.');
+      mostrarMensajeExito('Se cargaron los 3 libros y el préstamo de prueba.');
     }
   });
 }
 
 if (elements.btnBorrarTodo) {
   elements.btnBorrarTodo.addEventListener('click', () => {
-    if (confirm('¿Seguro que deseas borrar TODOS los datos del aula? Esta acción no se puede deshacer.')) {
+    if (confirm('¿Estás seguro de que querés borrar todos los libros y préstamos del aula? Esta acción no se puede deshacer.')) {
       borrarTodo();
       actualizarTodaLaUI();
-      mostrarToast('Todos los datos han sido borrados.');
+      mostrarMensajeExito('Se borraron todos los libros y préstamos del aula.');
     }
   });
 }
