@@ -2,13 +2,19 @@
 <html lang="es">
 <head>
   <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
   <title>Biblioteca de Aula</title>
-  <meta name="description" content="Control de préstamos de libros de aula y seguimiento de atrasos.">
+  <meta name="description" content="Control de libros de aula y seguimiento de atrasos con estética anime moderna.">
   <meta property="og:title" content="Biblioteca de Aula">
-  <meta property="og:description" content="Control de préstamos de libros de aula y seguimiento de atrasos.">
+  <meta property="og:description" content="Control de libros de aula y seguimiento de atrasos con estética anime moderna.">
   <meta property="og:type" content="website">
   <meta name="twitter:card" content="summary">
+
+  <!-- Configuración Android Web App / PWA Ready -->
+  <meta name="theme-color" content="#7c3aed">
+  <meta name="mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="default">
 
   <!-- Estilos puros sin dependencias externas, listos para GitHub Pages -->
   <link rel="stylesheet" href="./style.css">
@@ -16,21 +22,24 @@
 <body>
   <div class="app-container">
     
-    <!-- Encabezado principal superior -->
+    <!-- Encabezado superior Android Top App Bar -->
     <header class="header">
       <div class="header-brand">
-        <div>
-          <h1 class="brand-title">📖 Biblioteca de Aula</h1>
-          <p class="brand-subtitle">Control de libros y préstamos</p>
+        <div class="brand-wrapper">
+          <div class="brand-icon-anime" aria-hidden="true">✦</div>
+          <div>
+            <h1 class="brand-title">Biblioteca de Aula</h1>
+            <p class="brand-subtitle">Control de préstamos y devoluciones</p>
+          </div>
         </div>
         <div id="overdueHeaderBadge" class="overdue-counter-pill hidden">
-          <span>⚠️</span>
+          <span>⚡</span>
           <span id="overdueCountText">0 atrasados</span>
         </div>
       </div>
     </header>
 
-    <!-- Notificación emergente temporal (Toast) -->
+    <!-- Notificación emergente flotante (Toast) -->
     <div id="toast" class="toast" role="status" aria-live="polite"></div>
 
     <!-- Contenido de las Vistas -->
@@ -42,19 +51,19 @@
       <section id="view-atrasados" class="view-panel active">
         <div class="card">
           <h2 class="card-title">Préstamos Atrasados</h2>
-          <p class="card-subtitle">Ordenados de mayor a menor según los días de atraso.</p>
+          <p class="card-subtitle">Ordenados del más atrasado al menos atrasado.</p>
 
           <div id="atrasadosBanner" class="overdue-banner hidden">
-            <div class="overdue-banner-icon">⚠️</div>
+            <div class="overdue-banner-icon">🔥</div>
             <div class="overdue-banner-text">
-              <h4 id="atrasadosBannerTitle">Atención requerida</h4>
-              <p id="atrasadosBannerDesc">Hay libros que debieron ser devueltos.</p>
+              <h4 id="atrasadosBannerTitle">Plazo vencido</h4>
+              <p id="atrasadosBannerDesc">Hay libros pendientes de devolución en la sección.</p>
             </div>
           </div>
 
           <!-- Contenedor dinámico de la lista de atrasados -->
           <div id="listaAtrasadosContainer">
-            <!-- Se renderiza desde app.js -->
+            <!-- Renderizado dinámicamente desde app.js -->
           </div>
         </div>
       </section>
@@ -65,7 +74,7 @@
       <section id="view-prestar" class="view-panel">
         <div class="card">
           <h2 class="card-title">Nuevo Préstamo</h2>
-          <p class="card-subtitle">Registrá el préstamo a un estudiante o docente.</p>
+          <p class="card-subtitle">Asigná un libro disponible a un estudiante.</p>
 
           <form id="formPrestar" novalidate>
             <!-- Selección de libro disponible -->
@@ -77,7 +86,7 @@
                 <option value="" disabled selected>Seleccioná un libro disponible...</option>
               </select>
               <small id="prestamoLibroHelp" class="item-meta" style="margin-top: 4px; display: block;">
-                <!-- Aviso si no hay libros -->
+                <!-- Aviso de disponibilidad -->
               </small>
             </div>
 
@@ -125,9 +134,9 @@
 
             <!-- Atajos rápidos para fechas útiles en móvil -->
             <div class="form-group">
-              <span class="form-label" style="font-size: 0.75rem; color: var(--text-muted);">Atajos para fecha de devolución:</span>
+              <span class="form-label" style="font-size: 0.75rem; color: var(--text-muted);">Atajos rápidos de devolución:</span>
               <div class="date-quick-actions">
-                <button type="button" class="btn-quick" id="btnDevAyer">Ayer (para probar atraso)</button>
+                <button type="button" class="btn-quick" id="btnDevAyer">Ayer (probar atraso)</button>
                 <button type="button" class="btn-quick" id="btnDev7Dias">+7 días</button>
                 <button type="button" class="btn-quick" id="btnDev14Dias">+14 días</button>
               </div>
@@ -147,7 +156,7 @@
         <!-- Formulario de nuevo libro -->
         <div class="card">
           <h2 class="card-title">Registrar Libro</h2>
-          <p class="card-subtitle">Ingresá los datos del libro para el inventario de aula.</p>
+          <p class="card-subtitle">Añadí un nuevo ejemplar al catálogo del aula.</p>
 
           <form id="formLibro" novalidate>
             <div class="form-row">
@@ -214,41 +223,41 @@
         <!-- Inventario de libros registrados -->
         <div class="card">
           <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px;">
-            <h3 class="card-title" style="margin-bottom: 0;">Libros en el Aula</h3>
+            <h3 class="card-title" style="margin-bottom: 0;">Libros del Aula</h3>
             <span id="totalLibrosCount" class="item-meta">0 libros</span>
           </div>
           <div id="listaLibrosContainer">
-            <!-- Se renderiza desde app.js -->
+            <!-- Renderizado dinámicamente desde app.js -->
           </div>
         </div>
       </section>
 
       <!-- ==========================================
-           VISTA 4: TODOS LOS PRÉSTAMOS (ACTIVOS / HISTORIAL)
+           VISTA 4: TODOS LOS PRÉSTAMOS (HISTORIAL / ACTIVOS)
            ========================================== -->
       <section id="view-prestamos" class="view-panel">
         <div class="card">
           <h2 class="card-title">Gestión de Préstamos</h2>
-          <p class="card-subtitle">Marcá devoluciones y revisá el historial.</p>
+          <p class="card-subtitle">Marcá devoluciones y visualizá el historial.</p>
           
           <div id="listaTodosPrestamosContainer">
-            <!-- Se renderiza desde app.js -->
+            <!-- Renderizado dinámicamente desde app.js -->
           </div>
         </div>
       </section>
 
     </main>
 
-    <!-- Barra de navegación táctil inferior (Bottom Nav) -->
+    <!-- Barra de navegación táctil estilo Android Floating Pill -->
     <nav class="bottom-nav" aria-label="Navegación principal">
       <button type="button" class="nav-tab active" data-view="view-atrasados">
-        <span class="tab-icon">⚠️</span>
+        <span class="tab-icon">⚡</span>
         <span>Atrasados</span>
         <span id="tabBadgeAtrasados" class="tab-badge hidden">0</span>
       </button>
 
       <button type="button" class="nav-tab" data-view="view-prestar">
-        <span class="tab-icon">➕</span>
+        <span class="tab-icon">📖</span>
         <span>Prestar</span>
       </button>
 
@@ -265,7 +274,7 @@
 
   </div>
 
-  <!-- Lógica en JavaScript puro, sin frameworks y sin transpilación -->
+  <!-- Lógica en JavaScript puro, sin dependencias y sin transpilación -->
   <script src="./app.js"></script>
 </body>
 </html>
