@@ -496,6 +496,35 @@ body {
   border: 2px solid var(--error-border);
 }
 
+/* Tabla del Reporte del Acervo */
+.report-table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 16px;
+  border: 2px solid var(--border-strong);
+  background-color: #ffffff;
+  margin-bottom: 8px;
+}
+
+.report-table th, .report-table td {
+  border: 1px solid var(--border-strong);
+  padding: 10px 6px;
+  text-align: center;
+  font-size: 16px;
+  font-weight: 700;
+}
+
+.report-table th {
+  background-color: #e2e8f0;
+  font-weight: 800;
+  color: #0f172a;
+}
+
+.report-table td {
+  font-variant-numeric: tabular-nums;
+  font-size: 18px;
+}
+
 .item-actions {
   margin-top: 6px;
   border-top: 1px solid #cbd5e1;

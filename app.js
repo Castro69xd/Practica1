@@ -432,7 +432,16 @@ const elements = {
   btnExportarJSON: document.getElementById('btnExportarJSON'),
   inputImportarJSON: document.getElementById('inputImportarJSON'),
   btnCargarEjemplo: document.getElementById('btnCargarEjemplo'),
-  btnBorrarTodo: document.getElementById('btnBorrarTodo')
+  btnBorrarTodo: document.getElementById('btnBorrarTodo'),
+
+  // Controles del Reporte y Recordatorios con IA
+  btnGenerarIA: document.getElementById('btnGenerarIA'),
+  btnCargarMockIA: document.getElementById('btnCargarMockIA'),
+  contenedorResultadoIA: document.getElementById('contenedorResultadoIA'),
+  estadoOrigenIA: document.getElementById('estadoOrigenIA'),
+  cuerpoTablaReporte: document.getElementById('cuerpoTablaReporte'),
+  listaRecomendacionesIA: document.getElementById('listaRecomendacionesIA'),
+  listaTarjetasRecordatorios: document.getElementById('listaTarjetasRecordatorios')
 };
 
 /**
@@ -955,6 +964,240 @@ if (elements.btnBorrarTodo) {
       actualizarTodaLaUI();
       mostrarMensajeExito('Se borraron todos los libros y préstamos del aula.');
     }
+  });
+}
+
+// ==============================================================================
+// 7. INTEGRACIÓN CON GEMINI API: RECORDATORIOS Y REPORTE DEL ACERVO
+// ==============================================================================
+
+/**
+ * Respuesta de prueba fija (Mock) para desarrollar y probar la interfaz sin gastar llamadas a la API
+ */
+const MOCK_REPORTE_GEMINI = {
+  resumenAcervo: {
+    totalLibros: 3,
+    librosPrestados: 1,
+    librosAtrasados: 1,
+    librosDaniados: 0,
+    recomendaciones: [
+      "Dedicar los primeros 5 minutos del viernes para conversar sobre lecturas y revisar devoluciones.",
+      "Establecer un rincón de devolución rápida en el aula para que sea muy cómodo entregar el libro.",
+      "Reconocer públicamente a los estudiantes que cuidan los libros para estimular el sentido de pertenencia."
+    ]
+  },
+  recordatoriosAtrasos: [
+    {
+      persona: "Ana Gómez",
+      libroTitulo: "Cien años de soledad",
+      libroCodigo: "LIB-001",
+      diasAtraso: 1,
+      mensajeAmable: "¡Hola Ana! Esperamos que estés disfrutando mucho de 'Cien años de soledad'. Te recordamos con mucho cariño que el plazo acordado concluyó ayer. ¿Podrías traerlo mañana al aula para que tus compañeros también puedan leerlo? ¡Muchas gracias por cuidarlo!",
+      tono: "Cálido y empático"
+    }
+  ]
+};
+
+/**
+ * Plantilla Fija (Fallback Seguro):
+ * Se activa si la IA no responde, responde lento (>8s), se pierde la conexión
+ * o devuelve un formato no conforme con el esquema.
+ */
+function generarReportePlantillaFija() {
+  const atrasados = obtenerPrestamosAtrasados();
+  const prestadosActivos = prestamos.filter(p => !p.devuelto);
+  const daniados = libros.filter(l => l.estado === 'dañado');
+
+  const recordatorios = atrasados.map(a => {
+    const textoDias = a.diasAtraso === 1 ? '1 día' : `${a.diasAtraso} días`;
+    return {
+      persona: a.persona,
+      libroTitulo: a.libroTitulo,
+      libroCodigo: a.libroCodigo,
+      diasAtraso: a.diasAtraso,
+      mensajeAmable: `Hola ${a.persona}, te recordamos con cariño que el libro "${a.libroTitulo}" (${a.libroCodigo}) tiene ${textoDias} de atraso. Por favor, traelo al aula en cuanto puedas para que otro compañero pueda disfrutarlo. ¡Muchas gracias por colaborar con la biblioteca!`,
+      tono: "Plantilla automática cordial"
+    };
+  });
+
+  return {
+    resumenAcervo: {
+      totalLibros: libros.length,
+      librosPrestados: prestadosActivos.length,
+      librosAtrasados: atrasados.length,
+      librosDaniados: daniados.length,
+      recomendaciones: [
+        "Recordar semanalmente las fechas de entrega al iniciar la clase.",
+        "Revisar el estado físico de los ejemplares devueltos para conservarlos en buen estado.",
+        "Incentivar la lectura colectiva entre los compañeros de sección."
+      ]
+    },
+    recordatoriosAtrasos: recordatorios
+  };
+}
+
+/**
+ * Renderiza el JSON recibido en datos estructurados en la interfaz:
+ * - Tabla del reporte del acervo con números
+ * - Lista de recomendaciones pedagógicas
+ * - Tarjetas individuales por persona con botón para copiar
+ */
+function renderizarReporteIA(data, origenMensaje) {
+  if (!elements.contenedorResultadoIA) return;
+
+  // 1. Mostrar origen o estado
+  elements.estadoOrigenIA.textContent = origenMensaje;
+  elements.contenedorResultadoIA.classList.remove('hidden');
+
+  const resumen = data.resumenAcervo;
+
+  // 2. Llenar tabla del reporte
+  elements.cuerpoTablaReporte.innerHTML = `
+    <tr>
+      <td><strong>${resumen.totalLibros}</strong></td>
+      <td><strong>${resumen.librosPrestados}</strong></td>
+      <td><span class="item-badge-danger">${resumen.librosAtrasados}</span></td>
+      <td><strong>${resumen.librosDaniados}</strong></td>
+    </tr>
+  `;
+
+  // 3. Llenar recomendaciones
+  elements.listaRecomendacionesIA.innerHTML = resumen.recomendaciones
+    .map(rec => `<li style="margin-bottom: 6px;">${escaparHTML(rec)}</li>`)
+    .join('');
+
+  // 4. Llenar tarjetas de recordatorios
+  if (data.recordatoriosAtrasos.length === 0) {
+    elements.listaTarjetasRecordatorios.innerHTML = `
+      <div class="empty-state" style="margin-top: 8px;">
+        <div class="empty-state-title" style="font-size: 16px;">¡Excelente! No hay atrasos que notificar</div>
+        <p class="empty-state-desc" style="font-size: 16px;">Todos los libros prestados están dentro del plazo acordado.</p>
+      </div>
+    `;
+    return;
+  }
+
+  let htmlCards = '';
+  data.recordatoriosAtrasos.forEach((rec, idx) => {
+    const textoDias = rec.diasAtraso === 1 ? '1 día de atraso' : `${rec.diasAtraso} días de atraso`;
+    const idMensaje = `msg_rec_${idx}`;
+
+    htmlCards += `
+      <article class="item-card" style="border-left: 5px solid var(--primary-bg); margin-bottom: 14px;">
+        <div class="item-header">
+          <div>
+            <h4 class="item-title">${escaparHTML(rec.persona)}</h4>
+            <div class="item-meta" style="margin-top: 2px;">
+              <span>Libro: <strong>${escaparHTML(rec.libroTitulo)}</strong> (${escaparHTML(rec.libroCodigo)})</span>
+            </div>
+          </div>
+          <span class="item-badge-danger">${textoDias}</span>
+        </div>
+
+        <div style="margin: 6px 0;">
+          <span class="code-tag" style="font-size: 14px;">Tono: ${escaparHTML(rec.tono)}</span>
+        </div>
+
+        <div style="background-color: var(--surface-alt); border: 2px solid var(--border-strong); padding: 12px; border-radius: var(--radius-sm); font-size: 16px; font-weight: 600; line-height: 1.5; color: var(--text-main);">
+          “<span id="${idMensaje}">${escaparHTML(rec.mensajeAmable)}</span>”
+        </div>
+
+        <div class="item-actions">
+          <button 
+            type="button" 
+            class="btn btn-secondary" 
+            style="width: 100%;"
+            onclick="copiarTextoRecordatorio('${idMensaje}')"
+          >
+            📋 Copiar Mensaje para Enviar
+          </button>
+        </div>
+      </article>
+    `;
+  });
+
+  elements.listaTarjetasRecordatorios.innerHTML = htmlCards;
+}
+
+// Función auxiliar para copiar el texto con un toque
+window.copiarTextoRecordatorio = function(idElemento) {
+  const el = document.getElementById(idElemento);
+  if (!el) return;
+  const texto = el.textContent || '';
+  navigator.clipboard.writeText(texto).then(() => {
+    mostrarMensajeExito('¡Mensaje copiado al portapapeles!');
+  }).catch(() => {
+    mostrarMensajeExito('Mensaje seleccionado para copiar.');
+  });
+};
+
+/**
+ * Realiza la llamada a la API de Gemini (con control de timeout de 8 segundos y fallback)
+ */
+async function solicitarReporteGemini() {
+  const atrasados = obtenerPrestamosAtrasados();
+  elements.btnGenerarIA.disabled = true;
+  mostrarMensajeExito('Analizando libros y redactando recordatorios con Gemini...');
+
+  // Controlador de tiempo límite (Timeout de 8 segundos para evitar esperas eternas)
+  const controller = new AbortController();
+  const timeoutId = setTimeout(() => controller.abort(), 8000);
+
+  try {
+    const respuesta = await fetch('/api/gemini/reporte', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      signal: controller.signal,
+      body: JSON.stringify({
+        libros: libros,
+        prestamosAtrasados: atrasados
+      })
+    });
+
+    clearTimeout(timeoutId);
+
+    if (!respuesta.ok) {
+      throw new Error(`El servidor respondió con código ${respuesta.status}`);
+    }
+
+    const payload = await respuesta.json();
+    if (!payload.exito || !payload.datos || !payload.datos.resumenAcervo || !Array.isArray(payload.datos.recordatoriosAtrasos)) {
+      throw new Error('La respuesta recibida no cumple con la estructura requerida.');
+    }
+
+    renderizarReporteIA(payload.datos, '✨ Generado en tiempo real con Gemini 3.8 Flash');
+    mostrarMensajeExito('¡Recordatorios y reporte generados exitosamente con Gemini!');
+
+  } catch (error) {
+    clearTimeout(timeoutId);
+    console.warn('Fallo o demora en la llamada de Gemini API. Activando plantilla fija:', error);
+
+    // MANEJO DE FALLO REQUERIDO: Generar reporte con plantilla fija
+    const datosFallback = generarReportePlantillaFija();
+    renderizarReporteIA(
+      datosFallback,
+      '📋 Generado con Plantilla Fija Automática (La IA tardó o no estuvo disponible)'
+    );
+
+    mostrarMensajeError(
+      'La IA no respondió o estás en un sitio estático sin servidor. Se generó el reporte y los recordatorios con la plantilla fija del aula.'
+    );
+  } finally {
+    elements.btnGenerarIA.disabled = false;
+  }
+}
+
+// Eventos de los botones de IA
+if (elements.btnGenerarIA) {
+  elements.btnGenerarIA.addEventListener('click', solicitarReporteGemini);
+}
+
+if (elements.btnCargarMockIA) {
+  elements.btnCargarMockIA.addEventListener('click', () => {
+    renderizarReporteIA(MOCK_REPORTE_GEMINI, '🧪 Datos de Prueba (Simulación sin consumo de API)');
+    mostrarMensajeExito('Se cargaron los datos de prueba en la tabla y tarjetas.');
   });
 }
 
