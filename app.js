@@ -492,6 +492,10 @@ function cambiarPestaña(vistaId) {
   window.scrollTo({ top: 0, behavior: 'smooth' });
 }
 
+// Exponer funciones globales para interactuar con eventos onclick del HTML
+window.marcarComoDevuelto = marcarComoDevuelto;
+window.cambiarPestaña = cambiarPestaña;
+
 /**
  * Renderiza la lista de atrasados
  */
@@ -1158,12 +1162,14 @@ async function solicitarReporteGemini() {
 
     clearTimeout(timeoutId);
 
-    if (!respuesta.ok) {
-      throw new Error(`El servidor respondió con código ${respuesta.status}`);
+    const payload = await respuesta.json().catch(() => null);
+
+    if (!respuesta.ok || !payload || !payload.exito) {
+      const errDetalle = payload?.error || `Código ${respuesta.status}`;
+      throw new Error(errDetalle);
     }
 
-    const payload = await respuesta.json();
-    if (!payload.exito || !payload.datos || !payload.datos.resumenAcervo || !Array.isArray(payload.datos.recordatoriosAtrasos)) {
+    if (!payload.datos || !payload.datos.resumenAcervo || !Array.isArray(payload.datos.recordatoriosAtrasos)) {
       throw new Error('La respuesta recibida no cumple con la estructura requerida.');
     }
 
@@ -1178,11 +1184,11 @@ async function solicitarReporteGemini() {
     const datosFallback = generarReportePlantillaFija();
     renderizarReporteIA(
       datosFallback,
-      '📋 Generado con Plantilla Fija Automática (La IA tardó o no estuvo disponible)'
+      '📋 Generado con Plantilla Fija Automática (Modo seguro)'
     );
 
     mostrarMensajeError(
-      'La IA no respondió o estás en un sitio estático sin servidor. Se generó el reporte y los recordatorios con la plantilla fija del aula.'
+      'No se pudo conectar con la IA de Gemini. La app sigue 100% funcional y generó el reporte con la plantilla automática.'
     );
   } finally {
     elements.btnGenerarIA.disabled = false;
