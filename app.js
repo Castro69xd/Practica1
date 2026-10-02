@@ -254,8 +254,11 @@ function registrarLibro(codigo, titulo, autor, estado) {
 
   // Validaciones en español claro sin tecnicismos
   if (!codigoLimpio) throw new Error('Por favor, escribí el código del libro (por ejemplo: LIB-001).');
+  if (codigoLimpio.length > 20) throw new Error('El código del libro no puede superar los 20 caracteres.');
   if (!tituloLimpio) throw new Error('Por favor, escribí el título del libro.');
+  if (tituloLimpio.length > 120) throw new Error('El título del libro no puede superar los 120 caracteres.');
   if (!autorLimpio) throw new Error('Por favor, escribí el autor o autora del libro.');
+  if (autorLimpio.length > 80) throw new Error('El autor o autora no puede superar los 80 caracteres.');
   if (!['bueno', 'regular', 'dañado'].includes(estado)) {
     throw new Error('Elegí el estado físico del libro: bueno, regular o dañado.');
   }
@@ -288,8 +291,22 @@ function prestarLibro(codigoLibro, persona, fechaPrestamo, fechaDevolucion) {
 
   if (!codigoLibro) throw new Error('Por favor, elegí un libro disponible de la lista.');
   if (!personaLimpia) throw new Error('Por favor, escribí el nombre de la persona que se lleva el libro.');
+  if (personaLimpia.length > 80) throw new Error('El nombre de la persona no puede superar los 80 caracteres.');
   if (!fechaPrestamo) throw new Error('Por favor, indicá la fecha en la que se entrega el libro.');
   if (!fechaDevolucion) throw new Error('Por favor, indicá la fecha acordada para la devolución.');
+
+  // Validación: la fecha de devolución no puede ser anterior a la de préstamo
+  if (fechaDevolucion < fechaPrestamo) {
+    throw new Error('La fecha acordada de devolución no puede ser anterior a la fecha de entrega del libro.');
+  }
+
+  // Validación: años razonables del calendario
+  const anioP = parseInt(fechaPrestamo.split('-')[0], 10);
+  const anioD = parseInt(fechaDevolucion.split('-')[0], 10);
+  const anioHoy = new Date().getFullYear();
+  if (isNaN(anioP) || isNaN(anioD) || anioP < 2000 || anioP > anioHoy + 5 || anioD < 2000 || anioD > anioHoy + 5) {
+    throw new Error('Por favor, ingresá fechas válidas del calendario.');
+  }
 
   const libro = libros.find(l => l.codigo === codigoLibro);
   if (!libro) throw new Error('El libro seleccionado no se encuentra en el aula.');
@@ -769,6 +786,9 @@ elements.tabs.forEach(tab => {
 if (elements.formLibro) {
   elements.formLibro.addEventListener('submit', (e) => {
     e.preventDefault();
+    const btn = elements.formLibro.querySelector('button[type="submit"]');
+    if (btn) btn.disabled = true;
+
     try {
       const codigo = elements.libroCodigo.value;
       const titulo = elements.libroTitulo.value;
@@ -783,6 +803,8 @@ if (elements.formLibro) {
       mostrarMensajeExito(`¡Listo! El libro "${titulo}" (${codigo.toUpperCase()}) fue guardado en el aula.`);
     } catch (err) {
       mostrarMensajeError(err.message);
+    } finally {
+      if (btn) setTimeout(() => { btn.disabled = false; }, 400);
     }
   });
 }
@@ -791,6 +813,9 @@ if (elements.formLibro) {
 if (elements.formPrestar) {
   elements.formPrestar.addEventListener('submit', (e) => {
     e.preventDefault();
+    const btn = elements.formPrestar.querySelector('button[type="submit"]');
+    if (btn) btn.disabled = true;
+
     try {
       const codigoLibro = elements.prestamoLibroSelect.value;
       const persona = elements.prestamoPersona.value;
@@ -814,6 +839,8 @@ if (elements.formPrestar) {
       }
     } catch (err) {
       mostrarMensajeError(err.message);
+    } finally {
+      if (btn) setTimeout(() => { btn.disabled = false; }, 400);
     }
   });
 }
@@ -864,8 +891,12 @@ function importarDatosJSON(archivo) {
         throw new Error('El archivo seleccionado no corresponde a una copia válida de la biblioteca.');
       }
 
-      libros = contenido.libros;
-      prestamos = contenido.prestamos;
+      // Validación estructural profunda
+      const librosValidos = contenido.libros.filter(l => l && typeof l.codigo === 'string' && typeof l.titulo === 'string');
+      const prestamosValidos = contenido.prestamos.filter(p => p && typeof p.libroCodigo === 'string' && typeof p.persona === 'string');
+
+      libros = librosValidos;
+      prestamos = prestamosValidos;
 
       guardarCatalogo(libros);
       guardarPrestamos(prestamos);
@@ -880,6 +911,13 @@ function importarDatosJSON(archivo) {
 
   lector.readAsText(archivo);
 }
+
+// Sincronización entre pestañas simultáneas abiertas en el mismo dispositivo
+window.addEventListener('storage', () => {
+  libros = leerCatalogo();
+  prestamos = leerPrestamos();
+  actualizarTodaLaUI();
+});
 
 // Eventos de Respaldo
 if (elements.btnExportarJSON) {

@@ -431,6 +431,8 @@ body {
   font-weight: 800;
   color: var(--text-main);
   line-height: 1.25;
+  word-break: break-word;
+  overflow-wrap: anywhere;
 }
 
 .item-badge-danger {
